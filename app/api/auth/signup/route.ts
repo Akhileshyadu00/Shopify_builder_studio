@@ -41,10 +41,11 @@ export async function POST(req: Request) {
             { status: 201 }
         );
     } catch (error: any) {
-        console.error("Signup error:", error);
+        console.error("Signup API ERROR:", error);
         return NextResponse.json(
-            { message: "Internal server error" },
+            { message: `Internal server error: ${error.message || 'Unknown error'}` },
             { status: 500 }
         );
     }
+
 }
