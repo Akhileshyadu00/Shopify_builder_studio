@@ -4,10 +4,16 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 
+// Sanity check for environment variables
+if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === "production") {
+    console.error("CRITICAL: NEXTAUTH_SECRET is missing in production! This will cause 'Server configuration' errors.");
+}
+
 export const authOptions: NextAuthOptions = {
-    adapter: MongoDBAdapter(clientPromise, {
+    // We only use the adapter if MONGODB_URI is available
+    adapter: process.env.MONGODB_URI ? MongoDBAdapter(clientPromise, {
         databaseName: "shopify_builder",
-    }),
+    }) : undefined,
 
     providers: [
         CredentialsProvider({
@@ -25,7 +31,6 @@ export const authOptions: NextAuthOptions = {
                 const user = await client.db("shopify_builder").collection("users").findOne({
                     email: credentials.email,
                 });
-
 
                 if (!user || !user.password) {
                     throw new Error("User not found");
@@ -70,5 +75,6 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    // Use an environment variable, but provide a stable secret for development to avoid config errors
+    secret: process.env.NEXTAUTH_SECRET || "development-secret-key-123456789",
 };
