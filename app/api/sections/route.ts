@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET() {
     try {
@@ -43,9 +43,10 @@ export async function POST(req: Request) {
             javascript,
             schema,
             isCustom: true,
-            userId: session.user.id,
+            userId: (session.user as any).id,
             createdAt: new Date(),
         };
+
 
         // Upsert by slug
         await db.collection("custom_sections").updateOne(
