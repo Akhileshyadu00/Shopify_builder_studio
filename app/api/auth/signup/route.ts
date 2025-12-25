@@ -14,7 +14,8 @@ export async function POST(req: Request) {
         }
 
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db("shopify_builder");
+
 
         // Check if user already exists
         const existingUser = await db.collection("users").findOne({ email });

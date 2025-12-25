@@ -13,6 +13,10 @@ if (!uri) {
     clientPromise = Promise.reject(new Error('Invalid/Missing environment variable: "MONGODB_URI". Please visit Vercel settings and add this variable.'));
 } else {
     try {
+        // Extract DB name for logging/debugging
+        const dbName = uri.split("/").pop()?.split("?")[0] || "shopify_builder";
+        console.log(`Detected MongoDB Database: ${dbName}`);
+
         if (process.env.NODE_ENV === "development") {
             let globalWithMongo = global as typeof globalThis & {
                 _mongoClientPromise?: Promise<MongoClient>;
@@ -22,7 +26,7 @@ if (!uri) {
                 client = new MongoClient(uri, options);
                 globalWithMongo._mongoClientPromise = client.connect()
                     .then(client => {
-                        console.log("MongoDB Connected Successfully (Dev)");
+                        console.log(`MongoDB Connected Successfully to: ${dbName} (Dev)`);
                         return client;
                     })
                     .catch(err => {
@@ -35,7 +39,7 @@ if (!uri) {
             client = new MongoClient(uri, options);
             clientPromise = client.connect()
                 .then(client => {
-                    console.log("MongoDB Connected Successfully (Prod)");
+                    console.log(`MongoDB Connected Successfully to: ${dbName} (Prod)`);
                     return client;
                 })
                 .catch(err => {
@@ -48,6 +52,7 @@ if (!uri) {
         clientPromise = Promise.reject(e);
     }
 }
+
 
 
 

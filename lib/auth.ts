@@ -19,9 +19,10 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 const client = await clientPromise;
-                const user = await client.db().collection("users").findOne({
+                const user = await client.db("shopify_builder").collection("users").findOne({
                     email: credentials.email,
                 });
+
 
                 if (!user || !user.password) {
                     throw new Error("User not found");
