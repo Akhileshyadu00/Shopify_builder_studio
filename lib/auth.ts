@@ -5,7 +5,10 @@ import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
-    adapter: MongoDBAdapter(clientPromise),
+    adapter: MongoDBAdapter(clientPromise, {
+        databaseName: "shopify_builder",
+    }),
+
     providers: [
         CredentialsProvider({
             name: "credentials",
