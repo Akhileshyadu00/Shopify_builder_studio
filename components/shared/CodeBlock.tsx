@@ -24,7 +24,7 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
 
     return (
         <div className="relative group rounded-xl overflow-hidden border border-gray-800 bg-[#1e1e1e]">
-            <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-3 right-3 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <Button
                     size="sm"
                     variant="secondary"

@@ -46,6 +46,8 @@ export async function POST(req: Request) {
             schema,
             isCustom: true,
             userId: (session.user as any).id,
+            likes: 0,
+            saves: 0,
             createdAt: new Date(),
         };
 
