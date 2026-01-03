@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Navbar } from "@/components/shared/Navbar";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { sections } from "@/data/sections";
 import { ArrowRight, Sparkles, Code2, Zap } from "lucide-react";
