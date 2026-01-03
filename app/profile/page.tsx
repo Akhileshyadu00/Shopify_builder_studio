@@ -7,7 +7,6 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { useSectionStore } from "@/lib/section-store";
 import { Loader2, Plus, Layout } from "lucide-react";
 import Link from "next/link";
-import { Navbar } from "@/components/shared/Navbar";
 
 export default function ProfilePage() {
     const { data: session, status } = useSession();
@@ -38,7 +37,6 @@ export default function ProfilePage() {
 
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-black">
-            <Navbar />
 
             {/* Header */}
             <div className="bg-white border-b dark:bg-zinc-950 dark:border-zinc-900 border-zinc-200">
