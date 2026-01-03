@@ -9,6 +9,8 @@ let clientPromise: Promise<MongoClient>;
 if (!uri) {
     if (process.env.NODE_ENV === "production") {
         console.error("CRITICAL: MONGODB_URI is missing in production environment!");
+        // We throw this specific error so it appears in the Vercel logs clearly
+        throw new Error('❌ CONFIG ERROR: "MONGODB_URI" is missing in Vercel Environment Variables. Go to Settings > Environment Variables to add it.');
     }
     clientPromise = Promise.reject(new Error('Invalid/Missing environment variable: "MONGODB_URI". Please visit Vercel settings and add this variable.'));
 } else {

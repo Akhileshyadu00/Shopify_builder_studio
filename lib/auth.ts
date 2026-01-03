@@ -6,7 +6,9 @@ import { NextAuthOptions } from "next-auth";
 
 // Sanity check for environment variables
 if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === "production") {
-    console.error("CRITICAL: NEXTAUTH_SECRET is missing in production! This will cause 'Server configuration' errors.");
+    const errorMsg = "❌ CONFIG ERROR: NEXTAUTH_SECRET is missing. Authentication will fail. Add it in Vercel Settings > Environment Variables.";
+    console.error(errorMsg);
+    throw new Error(errorMsg);
 }
 
 declare module "next-auth" {
