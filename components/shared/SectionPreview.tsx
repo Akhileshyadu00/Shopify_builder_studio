@@ -1,8 +1,8 @@
 "use client";
 
 import { Section } from "@/data/sections";
-import { ArrowLeft, Star, ChevronDown, Check, Mail, LayoutTemplate, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { Star, ChevronDown, Check, Mail, LayoutTemplate, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -106,7 +106,7 @@ const CollectionSplit = () => (
             <p className="max-w-md text-zinc-400 mb-8 leading-relaxed">
                 Warm tones, soft textures, and essential layers for the changing season. Explore our curated selection of fall favorites.
             </p>
-            <a
+            <Link
                 href="/sections"
                 onClick={(e) => {
                     e.preventDefault();
@@ -115,7 +115,7 @@ const CollectionSplit = () => (
                 className="inline-block border-b border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-colors"
             >
                 Explore Collection
-            </a>
+            </Link>
 
         </div>
     </div>

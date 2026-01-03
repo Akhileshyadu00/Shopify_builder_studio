@@ -53,78 +53,82 @@ export const SectionCard = ({ section }: SectionCardProps) => {
 
     return (
         <motion.div
-            whileHover={{ y: -4 }}
-            className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-all hover:shadow-2xl hover:shadow-primary/10"
+            whileHover={{ y: -8, scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="group relative flex flex-col overflow-hidden rounded-[2rem] border border-zinc-100 bg-white transition-all hover:border-black/5 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] hover:glow-primary dark:border-zinc-900 dark:bg-zinc-950"
         >
             <Link href={`/sections/${slug}`} className="absolute inset-0 z-10" />
 
-            <div className="relative aspect-video overflow-hidden">
+            <div className="relative aspect-[16/10] overflow-hidden m-2 rounded-[1.5rem]">
                 <img
                     src={preview}
                     alt={name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-all duration-500 group-hover:opacity-100" />
 
-                <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 md:opacity-0 md:group-hover:opacity-100 transition-all group-hover:opacity-100 z-20">
+                {/* Top Action Buttons (Glass) */}
+                <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 transform translate-x-4 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 z-20">
                     <button
                         onClick={handleLike}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-md transition-all ${isLiked ? "bg-red-500 text-white" : "bg-white/20 text-white hover:bg-white/40"
+                        className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95 ${isLiked ? "bg-red-500 border-red-400 text-white" : "bg-white/10 text-white hover:bg-white/20"
                             }`}
                     >
                         <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
                     </button>
                     <button
                         onClick={handleSave}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-md transition-all ${isSaved ? "bg-primary text-white" : "bg-white/20 text-white hover:bg-white/40"
+                        className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95 ${isSaved ? "bg-black border-zinc-700 text-white" : "bg-white/10 text-white hover:bg-white/20"
                             }`}
                     >
                         <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
                     </button>
                 </div>
 
-                <div className="absolute bottom-4 left-4 right-4 flex translate-y-4 items-center justify-between gap-2 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 z-20">
-                    <Link
-                        href={`/sections/${slug}`}
-                        className="flex-1 rounded-lg bg-white/10 backdrop-blur-md px-3 py-2 text-center text-xs font-semibold text-white hover:bg-white/20"
-                    >
-                        Preview
-                    </Link>
+                {/* Bottom Action Bar */}
+                <div className="absolute bottom-5 left-5 right-5 flex translate-y-6 items-center justify-between gap-3 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 z-20">
+                    <div className="flex-1 rounded-xl bg-white/10 backdrop-blur-xl border border-white/10 px-4 py-2.5 text-center text-[11px] font-black uppercase tracking-widest text-white hover:bg-white/20 transition-colors">
+                        Inspect Section
+                    </div>
                     <button
                         onClick={handleCopy}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-black transition-colors hover:bg-primary hover:text-white"
+                        className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-black transition-all hover:scale-105 active:scale-95 shadow-xl"
                     >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-4.5 w-4.5" />
                     </button>
                 </div>
             </div>
 
-            <div className="flex flex-1 flex-col p-4 sm:p-5">
-                <div className="mb-2.5 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-1 flex-col p-6 pt-2">
+                <div className="mb-4 flex items-center justify-between">
+                    <div className="flex flex-wrap gap-2">
                         {niches.slice(0, 2).map((niche) => (
                             <span
                                 key={niche}
-                                className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary"
+                                className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400"
                             >
                                 {niche}
                             </span>
                         ))}
                     </div>
-                    <div className="flex items-center gap-3 text-muted-foreground">
-                        <div className="flex items-center gap-1 text-[11px] font-medium">
-                            <Heart className={`h-3 w-3 ${likeCount > likes ? "text-red-500 fill-red-500" : ""}`} />
+                    <div className="flex items-center gap-4 text-zinc-400">
+                        <div className="flex items-center gap-1.5 text-[10px] font-black">
+                            <Heart className={`h-3.5 w-3.5 ${isLiked ? "text-red-500 fill-red-500" : ""}`} />
                             {likeCount}
                         </div>
-                        <div className="flex items-center gap-1 text-[11px] font-medium">
-                            <Bookmark className={`h-3 w-3 ${saveCount > saves ? "text-primary fill-primary" : ""}`} />
+                        <div className="flex items-center gap-1.5 text-[10px] font-black">
+                            <Bookmark className={`h-3.5 w-3.5 ${isSaved ? "text-primary fill-primary" : ""}`} />
                             {saveCount}
                         </div>
                     </div>
                 </div>
-                <h3 className="line-clamp-2 text-sm sm:text-base font-bold leading-tight group-hover:text-primary transition-colors">
+                <h3 className="line-clamp-2 text-lg font-black leading-[1.1] tracking-tight text-zinc-900 group-hover:text-primary transition-colors dark:text-white">
                     {name}
                 </h3>
+                <div className="mt-4 flex items-center gap-2 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] dark:text-zinc-400">
+                    <div className="w-4 h-px bg-zinc-200 dark:bg-zinc-800" />
+                    Verified Liquid Source
+                </div>
             </div>
         </motion.div>
     );

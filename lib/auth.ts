@@ -9,6 +9,17 @@ if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === "production") {
     console.error("CRITICAL: NEXTAUTH_SECRET is missing in production! This will cause 'Server configuration' errors.");
 }
 
+declare module "next-auth" {
+    interface Session {
+        user: {
+            id: string;
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+        };
+    }
+}
+
 export const authOptions: NextAuthOptions = {
     // We only use the adapter if MONGODB_URI is available
     adapter: process.env.MONGODB_URI ? MongoDBAdapter(clientPromise, {
@@ -60,17 +71,15 @@ export const authOptions: NextAuthOptions = {
         signIn: "/",
     },
     callbacks: {
-        async jwt({ token, user }: any) {
+        async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                token.name = user.name;
             }
             return token;
         },
-        async session({ session, token }: any) {
+        async session({ session, token }) {
             if (session.user) {
-                (session.user as any).id = token.id;
-                (session.user as any).name = token.name;
+                session.user.id = token.id as string;
             }
             return session;
         },

@@ -1,103 +1,126 @@
-# Section Builder Studio
+# Shopify Builder Studio
 
-A powerful, universal code studio for building, testing, and previewing web sections. Originally designed for Shopify Liquid, it now supports React (JSX) and raw CSS, offering a true "code-to-design" experience.
+A premium web application for browsing, creating, and managing custom Shopify Liquid sections with live preview capabilities.
 
 ## 🚀 Features
 
-### 1. Universal Live Preview Engine
-The core of the studio is the `DynamicPreview` engine, which automatically detects your code type and mocks the environment:
+- **Section Library**: Browse a curated collection of premium Shopify sections
+- **Live Code Editor**: Create custom sections with real-time Liquid preview
+- **Resizable Panels**: VS Code-style split-pane editor with drag-to-resize functionality
+- **Dark Mode**: Beautiful dark mode support throughout the application
+- **Authentication**: Secure user authentication with NextAuth.js
+- **MongoDB Integration**: Store and manage custom sections in MongoDB
+- **Responsive Design**: Fully responsive across all devices
 
-*   **Shopify Liquid Mode**:
-    *   Full schema parsing (settings & blocks).
-    *   Simulates `{% for block in section.blocks %}` loops with mock data.
-    *   Mocks Shopify filters (`asset_url`, `t`, `money`).
-    *   Handles `{% render %}`, `{% form %}`, `{% assign %}` tags.
-*   **React Mode (JSX)**:
-    *   Auto-detects React components (`export default function...`).
-    *   Compiles JSX in the browser using **Babel Standalone**.
-    *   Renders components instantly securely sandboxed.
-*   **CSS Mode**:
-    *   Renders raw CSS in an isolated style playground.
+## 📋 Prerequisites
 
-### 2. Live Split-Screen Editor
-*   **Real-time Synchronization**: The Upload page features a 50/50 split view. Type code on the left, see the result on the right instantly.
-*   **Error Handling**: Graceful error boundaries for runtime JS/Liquid errors.
+- Node.js 18+ 
+- MongoDB Atlas account (or local MongoDB)
+- npm or yarn
 
-### 3. Section Library
-*   **Static Sections**: Pre-built premium sections (Heroes, Testimonials, etc.).
-*   **Custom Sections**: Your uploaded sections are saved to **MongoDB**, allowing persistence across sessions and browsers.
-*   **Deduplication**: Intelligent store logic prevents duplicate components based on slug.
+## 🛠️ Installation
 
-### 4. Authentication (NextAuth + MongoDB)
-*   **Secure Sign-up/Login**: Credential-based authentication with hashed passwords (bcrypt).
-*   **User Ownership**: Created sections are linked to the user who uploaded them.
+1. Clone the repository:
+```bash
+git clone https://github.com/Akhileshyadu00/Shopify_builder_studio.git
+cd Shopify_builder_studio
+```
 
+2. Install dependencies:
+```bash
+npm install
+```
 
-## 🛠 Tech Stack
+3. Create a `.env.local` file in the root directory:
+```env
+MONGODB_URI=your_mongodb_connection_string
+NEXTAUTH_SECRET=your_nextauth_secret_key
+NEXTAUTH_URL=http://localhost:3000
+```
 
-*   **Framework**: Next.js 16 (App Router)
-*   **Database**: MongoDB (Native driver)
-*   **Auth**: NextAuth.js (Auth.js) with MongoDB Adapter
-*   **Styling**: Tailwind CSS
-*   **UI Components**: ShadCN UI + Lucide React
-*   **State Management**: React Hooks + MongoDB API
-*   **Sandboxing**: React & Babel Standalone (Client-side compilation)
+4. Run the development server:
+```bash
+npm run dev
+```
 
-## 📦 Getting Started
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-1.  **Clone the Repository**:
-    ```bash
-    git clone your-repo-url
-    cd Task
-    ```
+## 🌐 Environment Variables
 
-2.  **Environment Variables**:
-    Create a `.env.local` file based on `.env.example`:
-    ```bash
-    cp .env.example .env.local
-    ```
-    Fill in your `MONGODB_URI` and `NEXTAUTH_SECRET`.
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `MONGODB_URI` | MongoDB connection string (include database name: `shopify_builder`) | Yes |
+| `NEXTAUTH_SECRET` | Secret key for NextAuth.js sessions | Yes |
+| `NEXTAUTH_URL` | Base URL of your application | Yes (Production) |
 
-3.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
+## 📦 Deployment to Vercel
 
-4.  **Run Development Server**:
-    ```bash
-    npm run dev
-    ```
+1. Push your code to GitHub
+2. Import your repository in Vercel
+3. Add environment variables in Vercel dashboard:
+   - `MONGODB_URI`
+   - `NEXTAUTH_SECRET`
+   - `NEXTAUTH_URL` (set to your production domain)
+4. Deploy!
 
-5.  **Open Studio**:
-    Visit `http://localhost:3000`
+## 🏗️ Tech Stack
 
-## 🚀 Vercel Deployment
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **Database**: MongoDB with Mongoose
+- **Authentication**: NextAuth.js
+- **UI Components**: Radix UI
+- **Animations**: Framer Motion
+- **Code Highlighting**: React Syntax Highlighter
 
-1.  Push your code to a GitHub repository.
-2.  Import the project into [Vercel](https://vercel.com).
-3.  Add the following Environment Variables in Vercel settings:
-    *   `MONGODB_URI`
-    *   `NEXTAUTH_SECRET`
-    *   `NEXTAUTH_URL` (Set this to your production domain, e.g., `https://your-app.vercel.app`)
-4.  Deploy!
+## 📁 Project Structure
 
+```
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── sections/          # Section library pages
+│   ├── upload/            # Section creation page
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── auth/             # Authentication components
+│   ├── providers/        # Context providers
+│   ├── shared/           # Shared components
+│   └── ui/               # UI components
+├── data/                  # Static data
+├── lib/                   # Utility functions and configs
+└── public/                # Static assets
+```
 
-## 📝 Usage
+## 🎨 Key Features
 
-### creating a Custom Section
-1.  Navigate to **/upload**.
-2.  Choose a name (this becomes the `slug`).
-3.  Paste your code.
-4.  Watch the preview update live.
-5.  Click **Create & Save Section** to store it in the database.
+### Resizable Editor
+- VS Code-inspired split-pane layout
+- Drag-to-resize panels
+- Responsive breakpoints for mobile/tablet
 
-## 🤝 Project Structure
+### Live Preview
+- Real-time Liquid code rendering
+- Device preview modes (Desktop, Tablet, Mobile)
+- Support for Liquid syntax, schema, and blocks
 
-*   `app/api/sections/route.ts`: API for database operations.
-*   `app/api/auth/[...nextauth]/route.ts`: Authentication configuration.
-*   `lib/mongodb.ts`: MongoDB client connection utility.
-*   `lib/section-store.ts`: Custom hook for fetching and saving sections.
+### Dark Mode
+- System preference detection
+- Manual toggle
+- Persistent theme selection
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👨‍💻 Author
+
+**Akhilesh Yadav**
 
 ---
-Designed with ❤️ by **Akhilesh Yadav**.
 
+Built with ❤️ for Shopify Merchants

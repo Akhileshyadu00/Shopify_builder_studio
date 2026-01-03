@@ -11,10 +11,11 @@ import { useSectionStore } from "@/lib/section-store";
 import { toast } from "sonner";
 import { DynamicPreview } from "@/components/shared/DynamicPreview";
 import { Niche } from "@/data/sections";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Smartphone, Tablet, Monitor, Zap, ArrowRight, Image as ImageIcon, Upload, X } from "lucide-react";
 import Link from "next/link";
 
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 const availableNiches: Niche[] = [
     "Beauty", "Electronics", "Dropshipping", "Fashion", "Fitness",
@@ -30,6 +31,7 @@ export default function UploadPage() {
     // Form State
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [previewImage, setPreviewImage] = useState("");
     const [category, setCategory] = useState("Custom");
     const [niches, setNiches] = useState<string[]>([]);
 
@@ -63,65 +65,31 @@ export default function UploadPage() {
 }
 {% endschema %}`);
 
-    // Auth check
-    useEffect(() => {
-        if (status === "unauthenticated") {
-            toast.error("Please login to upload sections");
-            router.push("/");
-        }
-    }, [status, router]);
-
-    if (status === "loading") {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        if (!name || !code) {
-            toast.error("Name and Code are required");
-            setIsLoading(false);
-            return;
-        }
-
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-
-        try {
-            await addSection({
-                slug,
-                name,
-                description,
-                category,
-                niches: niches as any,
-                preview: "/custom_section_placeholder.png",
-                code: code,
-            });
-
-            // toast.success is handled inside addSection now, but we can add more if needed
-            router.push(`/sections/${slug}?custom=true`);
-        } catch (error) {
-            // Error handled in store toast
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-
     // Resize State
     const [leftWidth, setLeftWidth] = useState(50); // Percentage
     const [isResizing, setIsResizing] = useState(false);
+    const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+    const [mounted, setMounted] = useState(false);
+    const [isLargeScreen, setIsLargeScreen] = useState(false);
 
-    const startResizing = (e: React.MouseEvent) => {
-        setIsResizing(true);
-        e.preventDefault();
-    };
+    // Initial mount check
+    useEffect(() => {
+        setMounted(true);
+        setIsLargeScreen(window.innerWidth >= 768);
+        const handleResize = () => setIsLargeScreen(window.innerWidth >= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
+    // Auth check
+    useEffect(() => {
+        if (mounted && status === "unauthenticated") {
+            toast.error("Please login to upload sections");
+            router.push("/");
+        }
+    }, [status, router, mounted]);
+
+    // Resize Effect
     useEffect(() => {
         const resize = (e: MouseEvent) => {
             if (isResizing) {
@@ -153,70 +121,199 @@ export default function UploadPage() {
         };
     }, [isResizing]);
 
+    if (!mounted || status === "loading") {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        if (!name || !code) {
+            toast.error("Name and Code are required");
+            setIsLoading(false);
+            return;
+        }
+
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+
+        try {
+            await addSection({
+                slug,
+                name,
+                description,
+                category,
+                niches: niches as Niche[],
+                preview: previewImage || "/custom_section_placeholder.png",
+                code: code,
+            });
+
+            // toast.success is handled inside addSection now, but we can add more if needed
+            router.push(`/sections/${slug}?custom=true`);
+        } catch (error) {
+            // Error handled in store toast
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result as string);
+                toast.success("Image uploaded successfully!");
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const startResizing = (e: React.MouseEvent) => {
+        setIsResizing(true);
+        e.preventDefault();
+    };
+
+
+    const getPreviewWidth = () => {
+        switch (previewDevice) {
+            case 'mobile': return '375px';
+            case 'tablet': return '768px';
+            default: return '100%';
+        }
+    };
+
     return (
-        <div className={`min-h-screen bg-white ${isResizing ? "cursor-col-resize select-none" : ""}`}>
-            {/* Overlay to prevent iframe theft of mouse events during resize */}
+        <div className={`min-h-screen bg-white dark:bg-black ${isResizing ? "cursor-col-resize select-none" : ""}`}>
+            {/* Overlay */}
             {isResizing && (
                 <div className="fixed inset-0 z-50 cursor-col-resize" onMouseUp={() => setIsResizing(false)} />
             )}
 
-            <div className="mx-auto w-full px-4 lg:px-8 py-6">
-                <div className="flex items-center justify-between mb-6 border-b pb-4">
-                    <Link href="/sections" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black transition-colors">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Library
+            <div className="mx-auto w-full px-4 lg:px-12 py-8">
+                <div className="flex items-center justify-between mb-10 border-b border-zinc-100 pb-6">
+                    <Link href="/sections" className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-black transition-colors group">
+                        <ArrowLeft className="mr-2 h-3 w-3 transition-transform group-hover:-translate-x-1" /> Back to Workspace
                     </Link>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-xl font-bold tracking-tight">Custom Section Studio</h1>
-                        <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">Editor</span>
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white shadow-2xl">
+                            <Zap className="h-5 w-5 fill-current" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black tracking-tighter uppercase leading-none">Studio <span className="text-zinc-300 italic">v2.0</span></h1>
+                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Direct Theme Integration</p>
+                        </div>
                     </div>
-                    <div className="w-24"></div> {/* Spacer */}
+                    <div className="w-24"></div>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-0 min-h-[calc(100vh-160px)] relative items-stretch">
-                    {/* Left: Input Form (Scrollable) */}
+                <div className="flex flex-col md:flex-row gap-0 min-h-[calc(100vh-200px)] relative items-stretch">
+                    {/* Left: Input Form */}
                     <div
-                        className="space-y-6 md:pr-4 lg:pr-8 pb-12 overflow-y-auto"
+                        className="space-y-8 md:pr-6 lg:pr-12 pb-20 overflow-y-auto"
                         style={{
-                            width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${leftWidth}%` : '100%',
+                            width: isLargeScreen ? `${leftWidth}%` : '100%',
                             flex: 'none'
                         }}
                     >
-                        <div className={`grid gap-4 ${leftWidth < 40 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-                            <Card className="border-zinc-200 shadow-sm">
-                                <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-base font-bold">Identity</CardTitle>
+                        <div className={`grid gap-6 ${leftWidth < 45 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
+                            <Card className="border-none surface p-1">
+                                <CardHeader className="p-5 pb-2">
+                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Section Identity</CardTitle>
                                 </CardHeader>
-                                <CardContent className="p-4 pt-0 space-y-4">
+                                <CardContent className="p-5 pt-0 space-y-5">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name" className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Section Name</Label>
+                                        <Label htmlFor="name" className="text-[10px] font-black uppercase text-zinc-500 tracking-wider dark:text-zinc-300">Internal Name</Label>
                                         <Input
                                             id="name"
-                                            placeholder="e.g. Hero Video"
+                                            placeholder="e.g. Premium Hero Video"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="h-10 text-sm focus-visible:ring-black border-zinc-200 bg-zinc-50/30"
+                                            className="h-12 text-sm font-bold border-none shadow-none surface-high focus-visible:ring-black rounded-xl"
                                             required
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="category" className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Category</Label>
+                                        <Label htmlFor="category" className="text-[10px] font-black uppercase text-zinc-500 tracking-wider dark:text-zinc-300">Theme Category</Label>
                                         <Input
                                             id="category"
                                             placeholder="e.g. Hero"
                                             value={category}
                                             onChange={(e) => setCategory(e.target.value)}
-                                            className="h-10 text-sm focus-visible:ring-black border-zinc-200 bg-zinc-50/30"
+                                            className="h-12 text-sm font-bold border-none shadow-none surface-high focus-visible:ring-black rounded-xl"
                                         />
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-zinc-200 shadow-sm">
-                                <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-base font-bold">Niches</CardTitle>
+                            <Card className="border-none surface p-1">
+                                <CardHeader className="p-5 pb-2">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Visual Preview</CardTitle>
+                                        <ImageIcon className="h-3 w-3 text-zinc-300" />
+                                    </div>
                                 </CardHeader>
-                                <CardContent className="p-4 pt-0">
-                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                <CardContent className="p-5 pt-0 space-y-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase text-zinc-500 tracking-wider dark:text-zinc-300">Image Source</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                id="previewImage"
+                                                placeholder="https://... or paste link"
+                                                value={previewImage}
+                                                onChange={(e) => setPreviewImage(e.target.value)}
+                                                className="h-10 text-xs font-bold border-none shadow-none surface-high focus-visible:ring-black rounded-xl"
+                                            />
+                                            <div className="relative">
+                                                <input
+                                                    type="file"
+                                                    id="fileUpload"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={handleImageUpload}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => document.getElementById('fileUpload')?.click()}
+                                                    variant="outline"
+                                                    className="h-10 w-10 p-0 rounded-xl surface-high border-none hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                >
+                                                    <Upload className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {previewImage && (
+                                        <div className="relative aspect-video rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+                                            <Image
+                                                src={previewImage}
+                                                alt="Section Preview"
+                                                fill
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                            <button
+                                                onClick={() => setPreviewImage("")}
+                                                className="absolute top-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border-none surface p-1">
+                                <CardHeader className="p-5 pb-2">
+                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Niche Tags</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-5 pt-0">
+                                    <div className="flex flex-wrap gap-2 mt-2">
                                         {availableNiches.map((niche) => (
                                             <button
                                                 key={niche}
@@ -224,9 +321,9 @@ export default function UploadPage() {
                                                 onClick={() => setNiches(prev =>
                                                     prev.includes(niche) ? prev.filter(n => n !== niche) : [...prev, niche]
                                                 )}
-                                                className={`rounded-md px-2.5 py-1.5 text-[10px] font-bold transition-all border ${niches.includes(niche)
-                                                    ? "bg-black text-white border-black"
-                                                    : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-zinc-300 active:scale-95"
+                                                className={`rounded-xl px-4 py-2.5 text-[10px] font-black transition-all border-2 active:scale-95 ${niches.includes(niche)
+                                                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                                                    : "bg-white text-zinc-500 border-transparent hover:border-zinc-200 dark:bg-zinc-900 dark:text-zinc-400"
                                                     }`}
                                             >
                                                 {niche}
@@ -237,119 +334,166 @@ export default function UploadPage() {
                             </Card>
                         </div>
 
-                        <Card className="border-zinc-200 shadow-sm">
-                            <CardHeader className="p-4 pb-2">
-                                <CardTitle className="text-base font-bold">Configuration</CardTitle>
+                        <Card className="border-none surface p-1">
+                            <CardHeader className="p-5 pb-2">
+                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Metadata Details</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-4 pt-0 space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="description" className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Description</Label>
-                                    <Textarea
-                                        id="description"
-                                        placeholder="What does this section do?..."
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        className="h-20 text-sm resize-none focus-visible:ring-black border-zinc-200 bg-zinc-50/30"
-                                    />
-                                </div>
+                            <CardContent className="p-5 pt-0">
+                                <Textarea
+                                    id="description"
+                                    placeholder="Technical description for other developers..."
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="min-h-[100px] text-sm font-medium border-none shadow-none surface-high focus-visible:ring-black rounded-xl resize-none p-4"
+                                />
                             </CardContent>
                         </Card>
 
-                        <Card className="border-black shadow-2xl overflow-hidden ring-1 ring-black/5">
-                            <div className="bg-black px-4 py-3 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex gap-1.5">
-                                        <div className="w-3 h-3 rounded-full bg-[#FF5F56] shadow-inner"></div>
-                                        <div className="w-3 h-3 rounded-full bg-[#FFBD2E] shadow-inner"></div>
-                                        <div className="w-3 h-3 rounded-full bg-[#27C93F] shadow-inner"></div>
+                        <div className="relative group/editor rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] border border-white/10">
+                            <div className="bg-[#0a0a0a] px-8 py-5 flex items-center justify-between border-b border-white/5">
+                                <div className="flex items-center gap-6">
+                                    <div className="flex gap-2">
+                                        <div className="w-3.5 h-3.5 rounded-full bg-[#FF5F56] shadow-[0_0_10px_rgba(255,95,86,0.3)]"></div>
+                                        <div className="w-3.5 h-3.5 rounded-full bg-[#FFBD2E] shadow-[0_0_10px_rgba(255,189,46,0.3)]"></div>
+                                        <div className="w-3.5 h-3.5 rounded-full bg-[#27C93F] shadow-[0_0_10px_rgba(39,201,63,0.3)]"></div>
                                     </div>
-                                    <div className="h-4 w-px bg-zinc-800 mx-1"></div>
-                                    <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-[0.2em]">Liquid Studio</span>
+                                    <div className="h-4 w-px bg-white/10"></div>
+                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Module.liquid</span>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <span className="text-[10px] font-mono text-zinc-500 uppercase">UTF-8</span>
-                                    <span className="text-[10px] font-mono text-zinc-500 uppercase">Liquid</span>
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                        <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">Syntax Active</span>
+                                    </div>
                                 </div>
                             </div>
-                            <CardContent className="p-0 bg-[#1e1e1e]">
-                                <form onSubmit={handleSubmit} className="relative group/editor">
+                            <div className="bg-[#0d0d0d]">
+                                <form onSubmit={handleSubmit} className="relative">
                                     <Textarea
                                         id="code"
-                                        className="font-mono text-[13px] min-h-[600px] p-6 lg:p-8 leading-relaxed bg-transparent text-zinc-300 border-0 focus-visible:ring-0 rounded-none scrollbar-hide selection:bg-primary/30"
+                                        className="font-mono text-[14px] min-h-[700px] p-10 leading-[1.8] bg-transparent text-zinc-300 border-0 focus-visible:ring-0 rounded-none scrollbar-hide selection:bg-primary/40"
                                         value={code}
                                         onChange={(e) => setCode(e.target.value)}
                                         spellCheck={false}
                                     />
-                                    <div className="absolute bottom-8 right-8 z-10 transition-transform hover:scale-105 active:scale-95">
-                                        <Button type="submit" size="lg" className="bg-white text-black hover:bg-zinc-200 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.3)] font-black px-8 py-6 h-auto text-base rounded-xl" disabled={isLoading}>
-                                            {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin text-black" /> : "Deploy Section"}
+                                    <div className="absolute bottom-12 right-12 z-10">
+                                        <Button
+                                            type="submit"
+                                            size="lg"
+                                            className={`group relative overflow-hidden h-16 px-12 rounded-[1.25rem] font-black transition-all active:scale-95 ${isLoading ? "bg-zinc-800" : "bg-white text-black hover:scale-105"
+                                                }`}
+                                            disabled={isLoading}
+                                        >
+                                            <span className="relative z-10 flex items-center gap-3">
+                                                {isLoading ? (
+                                                    <>
+                                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                                        Deploying Module...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Ship Section <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                                                    </>
+                                                )}
+                                            </span>
+                                            {!isLoading && <div className="absolute inset-0 bg-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />}
                                         </Button>
                                     </div>
                                 </form>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Premium VS Code Resize Handle */}
-                    <div
-                        onMouseDown={startResizing}
-                        className={`hidden md:flex w-1.5 hover:w-2 bg-transparent cursor-col-resize items-center justify-center transition-all group z-40 relative touch-none select-none ${isResizing ? "w-2" : ""}`}
-                    >
-                        <div className={`absolute inset-y-0 w-px bg-zinc-200 group-hover:bg-primary/50 transition-colors ${isResizing ? "bg-primary w-0.5" : ""}`} />
-                        <div className={`w-4 h-12 bg-white border border-zinc-200 shadow-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 active:scale-110 ${isResizing ? "opacity-100 scale-110" : ""}`}>
-                            <div className="flex gap-0.5">
-                                <div className="w-0.5 h-3 bg-zinc-300 rounded-full" />
-                                <div className="w-0.5 h-3 bg-zinc-300 rounded-full" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Live Preview (Sticky) */}
+                    {/* Resizer */}
                     <div
-                        className="md:pl-4 lg:pl-10 flex-1 bg-zinc-50/30"
+                        onMouseDown={startResizing}
+                        className={`hidden md:flex w-2 hover:w-3 bg-transparent cursor-col-resize items-center justify-center transition-all group z-40 relative touch-none select-none ${isResizing ? "w-3" : ""}`}
+                    >
+                        <div className={`absolute inset-y-0 w-[2px] bg-zinc-100 group-hover:bg-black/20 transition-colors ${isResizing ? "bg-black/40 w-[3px]" : ""}`} />
+                        <div className={`w-6 h-12 bg-white border border-zinc-200 shadow-2xl rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10 hover:scale-110 active:scale-125 ${isResizing ? "opacity-100 scale-125" : ""}`}>
+                            <div className="flex gap-[1px]">
+                                <div className="w-[1.5px] h-3 bg-zinc-300 rounded-full" />
+                                <div className="w-[1.5px] h-3 bg-zinc-300 rounded-full" />
+                                <div className="w-[1.5px] h-3 bg-zinc-300 rounded-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: Live Preview */}
+                    <div
+                        className="md:pl-6 lg:pl-16 flex-1 bg-zinc-50/20"
                         style={{
-                            width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - leftWidth}%` : '100%',
+                            width: isLargeScreen ? `${100 - leftWidth}%` : '100%',
                             flex: 'none'
                         }}
                     >
-                        <div className="md:sticky md:top-8 space-y-6 pt-2">
-                            <div className="flex items-center justify-between px-2">
+                        <div className="md:sticky md:top-8 space-y-8 pt-4">
+                            {/* Device Switcher */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1.5 p-1.5 bg-white border border-zinc-100 rounded-2xl shadow-sm">
+                                        {[
+                                            { id: 'mobile', icon: Smartphone },
+                                            { id: 'tablet', icon: Tablet },
+                                            { id: 'desktop', icon: Monitor }
+                                        ].map((device) => (
+                                            <button
+                                                key={device.id}
+                                                onClick={() => setPreviewDevice(device.id as any)}
+                                                className={`p-2 rounded-xl transition-all ${previewDevice === device.id
+                                                    ? "bg-black text-white shadow-lg"
+                                                    : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                                                    }`}
+                                            >
+                                                <device.icon className="h-4 w-4" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="h-4 w-px bg-zinc-200"></div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 italic">Liquid Engine Alpha</span>
+                                    </div>
+                                </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="relative">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
-                                        <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-green-500 animate-ping opacity-75"></div>
-                                    </div>
-                                    <h3 className="font-black text-sm text-gray-900 tracking-tighter uppercase italic">Live Engine Preview</h3>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-zinc-500 uppercase bg-white border border-zinc-200 px-3 py-1 rounded-full shadow-sm">Syncing...</span>
+                                    <span className="text-[9px] font-black pointer-events-none text-zinc-300 uppercase tracking-[0.2em]">Scale: Auto</span>
                                 </div>
                             </div>
 
-                            <div className="w-full bg-white rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-zinc-200 overflow-hidden relative group h-[calc(100vh-250px)] max-h-[900px]">
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5 z-10 pointer-events-none">
-                                    <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[11px] font-bold shadow-2xl border border-white/50 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                                        ⚡ Shopify Render Logic Active
+                            {/* Preview Container */}
+                            <div className="flex justify-center transition-all duration-500 ease-in-out">
+                                <div
+                                    className="bg-white rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-zinc-100 overflow-hidden relative group h-[calc(100vh-280px)] max-h-[1000px] transition-all duration-500"
+                                    style={{ width: getPreviewWidth() }}
+                                >
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/2 z-10 pointer-events-none">
+                                        <div className="bg-white/90 backdrop-blur-xl px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl border border-white/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                                            Interactive Canvas
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="w-full h-full overflow-hidden">
-                                    <DynamicPreview code={code} className="w-full h-full" />
+                                    <div className="w-full h-full overflow-hidden">
+                                        <DynamicPreview code={code} className="w-full h-full" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="bg-white p-6 rounded-2xl border border-zinc-100 shadow-sm space-y-4">
-                                <div className="flex items-center gap-2 text-black font-black uppercase tracking-tighter text-xs">
-                                    <div className="w-1 h-3 bg-black"></div>
-                                    <span>Dev Instructions</span>
-                                </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <div className="flex gap-3 items-start">
-                                        <code className="text-[10px] bg-zinc-100 px-1.5 py-0.5 rounded font-bold">{"{% schema %}"}</code>
-                                        <p className="text-[11px] text-zinc-500 leading-normal">Settings defined here populate current theme mock data.</p>
+                            {/* Technical Specs */}
+                            <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 bg-black"></div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Module Specifications</h4>
                                     </div>
-                                    <div className="flex gap-3 items-start">
-                                        <code className="text-[10px] bg-zinc-100 px-1.5 py-0.5 rounded font-bold">{"{% for %}"}</code>
-                                        <p className="text-[11px] text-zinc-500 leading-normal">Dynamic blocks and loops are rendered using the preview engine.</p>
+                                    <span className="text-[9px] font-bold text-zinc-400">Ver: 1.0.4</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-zinc-50 rounded-2xl">
+                                        <code className="text-[10px] block font-black mb-1 opacity-50">{"{% SCHEMA %}"}</code>
+                                        <p className="text-[10px] font-bold text-zinc-600 leading-tight">Configures theme settings panel.</p>
+                                    </div>
+                                    <div className="p-4 bg-zinc-50 rounded-2xl">
+                                        <code className="text-[10px] block font-black mb-1 opacity-50">{"{% BLOCKS %}"}</code>
+                                        <p className="text-[10px] font-bold text-zinc-600 leading-tight">Enables dynamic content stacking.</p>
                                     </div>
                                 </div>
                             </div>

@@ -56,14 +56,15 @@ export function useSectionStore() {
             await fetchSections();
             window.dispatchEvent(new Event("section-change"));
             toast.success("Section saved successfully!");
-        } catch (error: any) {
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
             console.error("Add section error:", error);
-            toast.error(error.message);
+            toast.error(message);
             throw error;
         }
     };
 
-    const removeSection = async (slug: string) => {
+    const removeSection = async (_slug: string) => {
         // Note: DELETE not implemented in API yet, but we could add it.
         // For now, we'll just focus on add/get as requested.
         toast.info("Delete functionality not yet connected to DB");
