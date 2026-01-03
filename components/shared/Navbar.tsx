@@ -113,7 +113,9 @@ export const Navbar = () => {
                                         <div className="h-5 w-5 rounded-full bg-black dark:bg-white flex items-center justify-center">
                                             <User className="h-2.5 w-2.5 text-white dark:text-black" />
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{user.name}</span>
+                                        <Link href="/profile" className="text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors">
+                                            {user.name}
+                                        </Link>
                                     </div>
                                     <button
                                         onClick={handleLogout}
@@ -173,7 +175,7 @@ export const Navbar = () => {
                             <div className="pt-4 border-t space-y-3">
                                 {user ? (
                                     <>
-                                        <div className="flex items-center gap-3 px-1">
+                                        <Link href="/profile" className="flex items-center gap-3 px-1 active:bg-zinc-100 rounded-lg p-2 transition-colors">
                                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                                                 <User className="h-4 w-4 text-primary" />
                                             </div>
@@ -181,7 +183,7 @@ export const Navbar = () => {
                                                 <span className="text-sm font-medium">{user.name}</span>
                                                 <span className="text-xs text-muted-foreground">{user.email}</span>
                                             </div>
-                                        </div>
+                                        </Link>
                                         <Button
                                             variant="outline"
                                             className="w-full justify-start"

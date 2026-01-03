@@ -3,11 +3,24 @@ import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
+        const { searchParams } = new URL(req.url);
+        const mine = searchParams.get("mine");
         const client = await clientPromise;
         const db = client.db("shopify_builder");
-        const sections = await db.collection("custom_sections").find({}).toArray();
+
+        let query = {};
+
+        if (mine === "true") {
+            const session = await getServerSession(authOptions);
+            if (!session) {
+                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
+            query = { userId: (session.user as any).id };
+        }
+
+        const sections = await db.collection("custom_sections").find(query).sort({ createdAt: -1 }).toArray();
 
         return NextResponse.json(sections);
     } catch (error) {

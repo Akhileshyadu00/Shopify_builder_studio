@@ -10,6 +10,7 @@ export interface CustomSection extends Section {
 
 export function useSectionStore() {
     const [customSections, setCustomSections] = useState<CustomSection[]>([]);
+    const [mySections, setMySections] = useState<CustomSection[]>([]);
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -28,17 +29,35 @@ export function useSectionStore() {
         }
     }, []);
 
+    const fetchMySections = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            const res = await fetch("/api/sections?mine=true");
+            if (res.ok) {
+                const data = await res.json();
+                setMySections(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch my sections:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         setMounted(true);
         fetchSections();
+        // We don't fetch mySections automatically everywhere to save bandwidth, 
+        // calling component should call it. But for simplicity let's rely on component.
 
         const handleStorageChange = () => {
             fetchSections();
+            fetchMySections(); // update both
         };
 
         window.addEventListener("section-change", handleStorageChange);
         return () => window.removeEventListener("section-change", handleStorageChange);
-    }, [fetchSections]);
+    }, [fetchSections, fetchMySections]);
 
     const addSection = async (section: Omit<CustomSection, "createdAt" | "isCustom">) => {
         try {
@@ -54,6 +73,7 @@ export function useSectionStore() {
             }
 
             await fetchSections();
+            await fetchMySections();
             window.dispatchEvent(new Event("section-change"));
             toast.success("Section saved successfully!");
         } catch (error) {
@@ -77,6 +97,7 @@ export function useSectionStore() {
 
             toast.success("Section deleted successfully");
             await fetchSections();
+            await fetchMySections();
             window.dispatchEvent(new Event("section-change"));
         } catch (error) {
             console.error("Delete section error:", error);
@@ -87,8 +108,10 @@ export function useSectionStore() {
 
     return {
         customSections,
+        mySections,
         addSection,
         removeSection,
+        fetchMySections,
         mounted,
         isLoading,
         refresh: fetchSections
