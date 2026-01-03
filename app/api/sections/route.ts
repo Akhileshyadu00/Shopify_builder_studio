@@ -65,3 +65,37 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Failed to save section" }, { status: 500 });
     }
 }
+
+export async function DELETE(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(req.url);
+        const slug = searchParams.get("slug");
+
+        if (!slug) {
+            return NextResponse.json({ error: "Missing slug parameter" }, { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("shopify_builder");
+
+        // Only allow deleting sections created by the user
+        const result = await db.collection("custom_sections").deleteOne({
+            slug,
+            userId: (session.user as any).id
+        });
+
+        if (result.deletedCount === 0) {
+            return NextResponse.json({ error: "Section not found or unauthorized" }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Failed to delete section:", error);
+        return NextResponse.json({ error: "Failed to delete section" }, { status: 500 });
+    }
+}

@@ -3,15 +3,18 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Copy, Heart, Bookmark } from "lucide-react";
+import { Copy, Heart, Bookmark, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Section } from "@/data/sections";
+import { useSectionStore, CustomSection } from "@/lib/section-store";
 
 interface SectionCardProps {
-    section: Section;
+    section: Section | CustomSection;
 }
 
 export const SectionCard = ({ section }: SectionCardProps) => {
+    const { removeSection } = useSectionStore();
+    const isCustom = 'isCustom' in section && section.isCustom;
     const {
         slug = "fallback",
         name = "Untitled Section",
@@ -83,6 +86,20 @@ export const SectionCard = ({ section }: SectionCardProps) => {
                     >
                         <Bookmark className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
                     </button>
+                    {isCustom && (
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (confirm("Are you sure you want to delete this section?")) {
+                                    removeSection(slug);
+                                }
+                            }}
+                            className="flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95 bg-red-500/80 text-white hover:bg-red-600"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    )}
                 </div>
 
                 {/* Bottom Action Bar */}

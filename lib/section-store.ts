@@ -64,10 +64,25 @@ export function useSectionStore() {
         }
     };
 
-    const removeSection = async (_slug: string) => {
-        // Note: DELETE not implemented in API yet, but we could add it.
-        // For now, we'll just focus on add/get as requested.
-        toast.info("Delete functionality not yet connected to DB");
+    const removeSection = async (slug: string) => {
+        try {
+            const res = await fetch(`/api/sections?slug=${slug}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || "Failed to delete section");
+            }
+
+            toast.success("Section deleted successfully");
+            await fetchSections();
+            window.dispatchEvent(new Event("section-change"));
+        } catch (error) {
+            console.error("Delete section error:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to delete section");
+            throw error;
+        }
     };
 
     return {
