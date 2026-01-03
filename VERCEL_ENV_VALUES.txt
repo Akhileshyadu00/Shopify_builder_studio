@@ -1,0 +1,3 @@
+MONGODB_URI=mongodb+srv://akhileshyadu001_db_user:TestPass123@cluster0.qtbmgwn.mongodb.net/shopify_builder?retryWrites=true&w=majority
+NEXTAUTH_SECRET=H4wYsdCj//JpfxjucQWLOd7uuZF6lmSdH+dWd2qYV+w=
+NEXTAUTH_URL=https://shopify-builder-studio.vercel.app
