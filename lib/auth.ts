@@ -38,29 +38,41 @@ export const authOptions: NextAuthOptions = {
                     throw new Error("Invalid credentials");
                 }
 
-                const client = await clientPromise;
-                const user = await client.db("shopify_builder").collection("users").findOne({
-                    email: credentials.email,
-                });
+                try {
+                    const client = await clientPromise;
+                    const user = await client.db("shopify_builder").collection("users").findOne({
+                        email: credentials.email,
+                    });
 
-                if (!user || !user.password) {
-                    throw new Error("User not found");
+                    if (!user || !user.password) {
+                        throw new Error("User not found");
+                    }
+
+                    const isPasswordCorrect = await bcrypt.compare(
+                        credentials.password,
+                        user.password
+                    );
+
+                    if (!isPasswordCorrect) {
+                        throw new Error("Invalid password");
+                    }
+
+                    return {
+                        id: user._id.toString(),
+                        email: user.email,
+                        name: user.name,
+                    };
+                } catch (error) {
+                    console.error("Authentication error:", error);
+                    if (error instanceof Error && error.message.includes("User not found")) {
+                        throw error;
+                    }
+                    if (error instanceof Error && error.message.includes("Invalid password")) {
+                        throw error;
+                    }
+                    // MongoDB connection or other errors
+                    throw new Error("Authentication service unavailable. Please check your database connection.");
                 }
-
-                const isPasswordCorrect = await bcrypt.compare(
-                    credentials.password,
-                    user.password
-                );
-
-                if (!isPasswordCorrect) {
-                    throw new Error("Invalid password");
-                }
-
-                return {
-                    id: user._id.toString(),
-                    email: user.email,
-                    name: user.name,
-                };
             },
         }),
     ],
