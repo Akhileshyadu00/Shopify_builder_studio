@@ -84,6 +84,31 @@ export function useSectionStore() {
         }
     };
 
+    const updateSection = async (slug: string, updates: Partial<CustomSection>) => {
+        try {
+            const res = await fetch("/api/sections", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ slug, ...updates }),
+            });
+
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || "Failed to update section");
+            }
+
+            await fetchSections();
+            await fetchMySections();
+            window.dispatchEvent(new Event("section-change"));
+            toast.success("Section updated successfully!");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "An unknown error occurred";
+            console.error("Update section error:", error);
+            toast.error(message);
+            throw error;
+        }
+    };
+
     const removeSection = async (slug: string) => {
         try {
             const res = await fetch(`/api/sections?slug=${slug}`, {
@@ -110,6 +135,7 @@ export function useSectionStore() {
         customSections,
         mySections,
         addSection,
+        updateSection,
         removeSection,
         fetchMySections,
         mounted,

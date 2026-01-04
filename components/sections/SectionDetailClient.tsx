@@ -1,14 +1,13 @@
-"use client";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Monitor, Smartphone, Tablet, Copy, Check, Info } from "lucide-react";
+import { ArrowLeft, Monitor, Smartphone, Tablet, Copy, Check, Info, Edit, Trash2 } from "lucide-react";
 import { Section } from "@/data/sections";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/shared/CodeBlock";
 import { SectionPreview } from "@/components/shared/SectionPreview";
 import { DynamicPreview } from "@/components/shared/DynamicPreview";
+import { SectionEditor } from "@/components/shared/SectionEditor";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSectionStore } from "@/lib/section-store";
@@ -21,7 +20,8 @@ import {
 
 export function SectionDetailClient({ section }: { section: Section }) {
     const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
-    const { removeSection } = useSectionStore();
+    const [isEditing, setIsEditing] = useState(false);
+    const { removeSection, updateSection } = useSectionStore();
     const router = useRouter();
 
     const handleCopyCode = (code: string, type: string) => {
@@ -37,7 +37,40 @@ export function SectionDetailClient({ section }: { section: Section }) {
         }
     };
 
+    const handleUpdate = async (data: any) => {
+        try {
+            await updateSection(section.slug, {
+                name: data.name,
+                description: data.description,
+                category: data.category,
+                niches: data.niches,
+                preview: data.preview,
+                code: data.code,
+            });
+            setIsEditing(false);
+            // toast.success("Section updated successfully"); // Handled in store
+        } catch (error) {
+            console.error("Update failed", error);
+        }
+    };
+
     const isCustom = (section as any).isCustom;
+
+    if (isEditing) {
+        return (
+            <SectionEditor
+                mode="edit"
+                initialCode={section.code}
+                initialName={section.name}
+                initialDescription={section.description}
+                initialCategory={section.category}
+                initialNiches={section.niches}
+                initialPreviewImage={section.preview}
+                onSave={handleUpdate}
+                onCancel={() => setIsEditing(false)}
+            />
+        );
+    }
 
     return (
         <div className="h-[calc(100vh-64px)] flex flex-col md:flex-row overflow-hidden bg-white">
@@ -103,16 +136,26 @@ export function SectionDetailClient({ section }: { section: Section }) {
                         </TooltipProvider>
                     </div>
 
-                    <div className="w-20 hidden sm:block flex justify-end">
+                    <div className="hidden sm:block flex justify-end gap-2">
                         {isCustom && (
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                className="h-8 px-3 text-xs"
-                                onClick={handleDelete}
-                            >
-                                Delete
-                            </Button>
+                            <>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 px-3 text-xs"
+                                    onClick={() => setIsEditing(true)}
+                                >
+                                    <Edit className="h-3 w-3 mr-1.5" /> Edit
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="h-8 px-3 text-xs"
+                                    onClick={handleDelete}
+                                >
+                                    <Trash2 className="h-3 w-3 mr-1.5" /> Delete
+                                </Button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -155,6 +198,15 @@ export function SectionDetailClient({ section }: { section: Section }) {
                         >
                             <Copy className="mr-2 h-4 w-4" /> Copy Section Code
                         </Button>
+                        {isCustom && (
+                            <Button
+                                variant="secondary"
+                                className="bg-zinc-800 text-white hover:bg-zinc-700 h-11 px-4 lg:hidden"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
                 </div>
 

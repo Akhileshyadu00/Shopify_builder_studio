@@ -79,6 +79,58 @@ export async function POST(req: Request) {
     }
 }
 
+export async function PUT(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const data = await req.json();
+        const { slug, ...updates } = data;
+
+        if (!slug) {
+            return NextResponse.json({ error: "Missing slug" }, { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("shopify_builder");
+
+        // Verify ownership before updating
+        const existingSection = await db.collection("custom_sections").findOne({ slug });
+
+        if (!existingSection) {
+            return NextResponse.json({ error: "Section not found" }, { status: 404 });
+        }
+
+        if (existingSection.userId !== (session.user as any).id) {
+            return NextResponse.json({ error: "Unauthorized to edit this section" }, { status: 403 });
+        }
+
+        // Update fields
+        // Ensure we don't accidentally update immutable fields like _id or userId (though userId check handles auth)
+        const allowedUpdates = { ...updates };
+        delete allowedUpdates._id;
+        delete allowedUpdates.userId;
+        delete allowedUpdates.slug; // Slug shouldn't change
+        delete allowedUpdates.createdAt;
+
+        const result = await db.collection("custom_sections").updateOne(
+            { slug },
+            { $set: { ...allowedUpdates, updatedAt: new Date() } }
+        );
+
+        if (result.modifiedCount === 0) {
+            // It's possible nothing changed, but success is true
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Failed to update section:", error);
+        return NextResponse.json({ error: "Failed to update section" }, { status: 500 });
+    }
+}
+
 export async function DELETE(req: Request) {
     try {
         const session = await getServerSession(authOptions);
