@@ -5,7 +5,10 @@ import { Github, Twitter, Linkedin, Facebook, Mail } from "lucide-react";
 
 export const Footer = () => {
     const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
 
     if (!mounted) return null;
 

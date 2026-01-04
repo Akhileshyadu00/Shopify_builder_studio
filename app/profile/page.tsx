@@ -89,7 +89,7 @@ export default function ProfilePage() {
                         </div>
                         <h3 className="text-lg font-bold mb-2">No sections yet</h3>
                         <p className="text-zinc-500 max-w-sm mb-8">
-                            You haven't created any custom sections yet. Start building your library today.
+                            You haven&apos;t created any custom sections yet. Start building your library today.
                         </p>
                         <Link href="/upload">
                             <button className="text-primary font-black uppercase tracking-widest text-xs hover:underline">

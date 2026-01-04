@@ -17,6 +17,15 @@ const availableNiches: Niche[] = [
     "Home Decor", "Jewelry", "Luxury", "Minimal", "Ready-To-Use Templates"
 ];
 
+export interface SectionData {
+    name: string;
+    description: string;
+    category: string;
+    niches: string[];
+    preview: string;
+    code: string;
+}
+
 interface SectionEditorProps {
     initialCode?: string;
     initialName?: string;
@@ -25,7 +34,7 @@ interface SectionEditorProps {
     initialNiches?: string[];
     initialPreviewImage?: string;
     mode: "create" | "edit";
-    onSave: (data: any) => Promise<void>;
+    onSave: (data: SectionData) => Promise<void>;
     onCancel?: () => void;
 }
 
@@ -137,7 +146,7 @@ export function SectionEditor({
                 preview: previewImage || "/custom_section_placeholder.png",
                 code,
             });
-        } catch (error) {
+        } catch {
             // Error handled in parent or store
         } finally {
             setIsLoading(false);
@@ -419,7 +428,7 @@ export function SectionEditor({
                                         ].map((device) => (
                                             <button
                                                 key={device.id}
-                                                onClick={() => setPreviewDevice(device.id as any)}
+                                                onClick={() => setPreviewDevice(device.id as 'desktop' | 'tablet' | 'mobile')}
                                                 className={`p-2 rounded-xl transition-all ${previewDevice === device.id
                                                     ? "bg-black text-white shadow-lg"
                                                     : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"

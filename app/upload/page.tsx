@@ -6,17 +6,18 @@ import { useSectionStore } from "@/lib/section-store";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { SectionEditor } from "@/components/shared/SectionEditor";
+import { SectionEditor, SectionData } from "@/components/shared/SectionEditor";
 import { Niche } from "@/data/sections";
 
 export default function UploadPage() {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const { addSection } = useSectionStore();
     const [mounted, setMounted] = useState(false);
 
     // Initial mount check
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
@@ -36,7 +37,7 @@ export default function UploadPage() {
         );
     }
 
-    const handleSave = async (data: any) => {
+    const handleSave = async (data: SectionData) => {
         const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
         await addSection({

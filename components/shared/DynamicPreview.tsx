@@ -96,8 +96,8 @@ export function DynamicPreview({ code, className }: DynamicPreviewProps) {
       // --- LIQUID / HTML MODE (Existing Logic) ---
 
       // --- 1. Extract Schema & Styles & JS ---
-      let settings: Record<string, any> = {};
-      let blocksSchema: Record<string, any> = {};
+      const settings: Record<string, any> = {};
+      const blocksSchema: Record<string, any> = {};
       const schemaMatch = code.match(/{% schema %}([\s\S]*?){% endschema %}/);
 
       if (schemaMatch) {
@@ -112,7 +112,7 @@ export function DynamicPreview({ code, className }: DynamicPreviewProps) {
           }
           if (schemaJson.blocks) {
             schemaJson.blocks.forEach((block: any) => {
-              let blockDefaults: Record<string, any> = {};
+              const blockDefaults: Record<string, any> = {};
               if (block.settings) {
                 block.settings.forEach((s: any) => {
                   if (s.id && s.default !== undefined) {

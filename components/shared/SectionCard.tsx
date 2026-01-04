@@ -8,12 +8,20 @@ import { toast } from "sonner";
 import { Section } from "@/data/sections";
 import { useSectionStore, CustomSection } from "@/lib/section-store";
 
+import { useSession } from "next-auth/react";
+
 interface SectionCardProps {
     section: Section | CustomSection;
 }
 
 export const SectionCard = ({ section }: SectionCardProps) => {
-    const { removeSection } = useSectionStore();
+    const { removeSection, toggleInteraction, likedSlugs, savedSlugs } = useSectionStore();
+    const { status } = useSession();
+
+    // We can't import useSession directly comfortably? 
+    // Actually, let's use the one from next-auth/react
+    // Need to make sure import is correct at top of file
+
     const isCustom = 'isCustom' in section && section.isCustom;
     const {
         slug = "fallback",
@@ -25,10 +33,25 @@ export const SectionCard = ({ section }: SectionCardProps) => {
         saves = 0
     } = section;
 
-    const [isLiked, setIsLiked] = React.useState(false);
-    const [isSaved, setIsSaved] = React.useState(false);
-    const [likeCount, setLikeCount] = React.useState(likes);
-    const [saveCount, setSaveCount] = React.useState(saves);
+    // Derived state from global store
+    const isLiked = likedSlugs.includes(slug);
+    const isSaved = savedSlugs.includes(slug);
+
+    // Initial counts (static) + optimistic delta? 
+    // For simplicity, we just use the static count + 1 if we toggled it ON and it wasn't before?
+    // Actually simplicity is: just assume static count is source of truth for "others", 
+    // but verifying "isLiked" adds 1 specifically for THIS user view if not already counted?
+    // Let's just use local state for immediate feedback
+
+    const [localLikes, setLocalLikes] = React.useState(likes);
+    const [localSaves, setLocalSaves] = React.useState(saves);
+
+    // Sync local counts when props change
+    React.useEffect(() => {
+        setLocalLikes(likes);
+        setLocalSaves(saves);
+    }, [likes, saves]);
+
 
     const handleCopy = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -38,20 +61,27 @@ export const SectionCard = ({ section }: SectionCardProps) => {
         toast.success("Code copied to clipboard!");
     };
 
-    const handleLike = (e: React.MouseEvent) => {
+    const handleInteraction = async (e: React.MouseEvent, action: "like" | "save") => {
         e.preventDefault();
         e.stopPropagation();
-        setIsLiked(!isLiked);
-        setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-        toast.success(isLiked ? "Removed from favorites" : "Added to favorites");
-    };
 
-    const handleSave = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsSaved(!isSaved);
-        setSaveCount(prev => isSaved ? prev - 1 : prev + 1);
-        toast.success(isSaved ? "Removed from bookmarks" : "Saved to bookmarks");
+        if (status !== "authenticated") {
+            toast.error(`Please login to ${action} sections`);
+            return;
+        }
+
+        const isActive = action === "like" ? isLiked : isSaved;
+
+        // Optimistic local update for count
+        if (action === "like") {
+            setLocalLikes(prev => isActive ? prev - 1 : prev + 1);
+            toast.success(isActive ? "Removed from favorites" : "Added to favorites");
+        } else {
+            setLocalSaves(prev => isActive ? prev - 1 : prev + 1);
+            toast.success(isActive ? "Removed from bookmarks" : "Saved to bookmarks");
+        }
+
+        toggleInteraction(slug, action);
     };
 
     return (
@@ -73,14 +103,14 @@ export const SectionCard = ({ section }: SectionCardProps) => {
                 {/* Top Action Buttons (Glass) */}
                 <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 transform translate-x-4 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 z-20">
                     <button
-                        onClick={handleLike}
+                        onClick={(e) => handleInteraction(e, "like")}
                         className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95 ${isLiked ? "bg-red-500 border-red-400 text-white" : "bg-white/10 text-white hover:bg-white/20"
                             }`}
                     >
                         <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
                     </button>
                     <button
-                        onClick={handleSave}
+                        onClick={(e) => handleInteraction(e, "save")}
                         className={`flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-xl border border-white/20 transition-all active:scale-95 ${isSaved ? "bg-black border-zinc-700 text-white" : "bg-white/10 text-white hover:bg-white/20"
                             }`}
                     >
@@ -131,11 +161,11 @@ export const SectionCard = ({ section }: SectionCardProps) => {
                     <div className="flex items-center gap-4 text-zinc-400">
                         <div className="flex items-center gap-1.5 text-[10px] font-black">
                             <Heart className={`h-3.5 w-3.5 ${isLiked ? "text-red-500 fill-red-500" : ""}`} />
-                            {likeCount}
+                            {localLikes}
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] font-black">
                             <Bookmark className={`h-3.5 w-3.5 ${isSaved ? "text-primary fill-primary" : ""}`} />
-                            {saveCount}
+                            {localSaves}
                         </div>
                     </div>
                 </div>
@@ -150,3 +180,4 @@ export const SectionCard = ({ section }: SectionCardProps) => {
         </motion.div>
     );
 };
+

@@ -44,20 +44,63 @@ export function useSectionStore() {
         }
     }, []);
 
+    const [likedSlugs, setLikedSlugs] = useState<string[]>([]);
+    const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
+
+    const fetchInteractions = useCallback(async () => {
+        try {
+            const res = await fetch("/api/interact");
+            if (res.ok) {
+                const data = await res.json();
+                setLikedSlugs(data.likedSlugs || []);
+                setSavedSlugs(data.savedSlugs || []);
+            }
+        } catch (error) {
+            console.error("Failed to fetch interactions:", error);
+        }
+    }, []);
+
     useEffect(() => {
         setMounted(true);
         fetchSections();
-        // We don't fetch mySections automatically everywhere to save bandwidth, 
-        // calling component should call it. But for simplicity let's rely on component.
+        fetchInteractions();
 
         const handleStorageChange = () => {
             fetchSections();
-            fetchMySections(); // update both
+            fetchMySections();
+            fetchInteractions();
         };
 
         window.addEventListener("section-change", handleStorageChange);
         return () => window.removeEventListener("section-change", handleStorageChange);
-    }, [fetchSections, fetchMySections]);
+    }, [fetchSections, fetchMySections, fetchInteractions]);
+
+    const toggleInteraction = async (slug: string, action: "like" | "save") => {
+        // Optimistic UI Update
+        if (action === "like") {
+            setLikedSlugs(prev => prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]);
+        } else {
+            setSavedSlugs(prev => prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]);
+        }
+
+        try {
+            const res = await fetch("/api/interact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ slug, action }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update interaction");
+
+            // No need to refetch immediately if optimistic update worked, but...
+            // window.dispatchEvent(new Event("section-change")); // updates counts for others
+        } catch (error) {
+            console.error("Interaction failed:", error);
+            // Revert on failure
+            fetchInteractions();
+            toast.error("Action failed");
+        }
+    };
 
     const addSection = async (section: Omit<CustomSection, "createdAt" | "isCustom">) => {
         try {
@@ -134,9 +177,12 @@ export function useSectionStore() {
     return {
         customSections,
         mySections,
+        likedSlugs,
+        savedSlugs,
         addSection,
         updateSection,
         removeSection,
+        toggleInteraction,
         fetchMySections,
         mounted,
         isLoading,
