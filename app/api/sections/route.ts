@@ -96,14 +96,15 @@ export async function PUT(req: Request) {
         const client = await clientPromise;
         const db = client.db("shopify_builder");
 
-        // Verify ownership before updating
+        // Verify ownership or admin status before updating
         const existingSection = await db.collection("custom_sections").findOne({ slug });
 
         if (!existingSection) {
             return NextResponse.json({ error: "Section not found" }, { status: 404 });
         }
 
-        if (existingSection.userId !== session.user.id) {
+        const isAdmin = session.user.role === "admin";
+        if (existingSection.userId !== session.user.id && !isAdmin) {
             return NextResponse.json({ error: "Unauthorized to edit this section" }, { status: 403 });
         }
 
@@ -148,11 +149,15 @@ export async function DELETE(req: Request) {
         const client = await clientPromise;
         const db = client.db("shopify_builder");
 
-        // Only allow deleting sections created by the user
-        const result = await db.collection("custom_sections").deleteOne({
-            slug,
-            userId: session.user.id
-        });
+        const isAdmin = session.user.role === "admin";
+        let query: any = { slug };
+
+        if (!isAdmin) {
+            query.userId = session.user.id;
+        }
+
+        // Only allow deleting sections created by the user (or anyone if admin)
+        const result = await db.collection("custom_sections").deleteOne(query);
 
         if (result.deletedCount === 0) {
             return NextResponse.json({ error: "Section not found or unauthorized" }, { status: 404 });

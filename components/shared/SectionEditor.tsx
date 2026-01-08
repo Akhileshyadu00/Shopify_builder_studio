@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { DynamicPreview } from "@/components/shared/DynamicPreview";
 import { Niche } from "@/data/sections";
-import { ArrowLeft, Loader2, Monitor, Smartphone, Tablet, Upload, X, Zap, ArrowRight, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Monitor, Smartphone, Tablet, Upload, X, Zap, ArrowRight, Image as ImageIcon, Sparkles } from "lucide-react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 const availableNiches: Niche[] = [
     "Beauty", "Electronics", "Dropshipping", "Fashion", "Fitness",
@@ -185,35 +186,50 @@ export function SectionEditor({
             )}
 
             <div className="mx-auto w-full px-4 lg:px-12 py-8">
-                <div className="flex items-center justify-between mb-10 border-b border-zinc-100 pb-6">
-                    <button onClick={onCancel} className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-black transition-colors group">
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-between mb-10 border-b border-zinc-100 pb-6"
+                >
+                    <button onClick={onCancel} className="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:text-black transition-colors group text-left">
                         <ArrowLeft className="mr-2 h-3 w-3 transition-transform group-hover:-translate-x-1" /> {mode === 'edit' ? 'Cancel Editing' : 'Back to Workspace'}
                     </button>
                     <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white shadow-2xl">
-                            <Zap className="h-5 w-5 fill-current" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white shadow-2xl overflow-hidden relative group">
+                            <Zap className="h-5 w-5 fill-current relative z-10" />
+                            <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <div>
                             <h1 className="text-xl font-black tracking-tighter uppercase leading-none">Studio <span className="text-zinc-300 italic">v2.0</span></h1>
-                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Direct Theme Integration</p>
+                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mt-1 italic">Premium Logic Engine</p>
                         </div>
                     </div>
-                    <div className="w-24"></div>
-                </div>
+                    <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-50 dark:bg-zinc-900 rounded-full border border-zinc-100 dark:border-zinc-800">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Live Sync Active</span>
+                    </div>
+                </motion.div>
 
                 <div className="flex flex-col md:flex-row gap-0 min-h-[calc(100vh-200px)] relative items-stretch">
                     {/* Left: Input Form */}
                     <div
-                        className="space-y-8 md:pr-6 lg:pr-12 pb-20 overflow-y-auto"
+                        className="space-y-8 md:pr-6 lg:pr-12 pb-20 overflow-y-auto custom-scrollbar"
                         style={{
                             width: isLargeScreen ? `${leftWidth}%` : '100%',
                             flex: 'none'
                         }}
                     >
-                        <div className={`grid gap-6 ${leftWidth < 45 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}>
-                            <Card className="border-none surface p-1">
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className={`grid gap-6 ${leftWidth < 45 ? "grid-cols-1" : "grid-cols-1 xl:grid-cols-2"}`}
+                        >
+                            <Card className="border-none bg-zinc-50/50 dark:bg-zinc-900/30 p-1 group hover:bg-zinc-100/50 transition-colors">
                                 <CardHeader className="p-5 pb-2">
-                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Section Identity</CardTitle>
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Section Identity</CardTitle>
+                                        <Sparkles className="h-3 w-3 text-zinc-300 group-hover:text-primary transition-colors" />
+                                    </div>
                                 </CardHeader>
                                 <CardContent className="p-5 pt-0 space-y-5">
                                     <div className="space-y-2">
@@ -223,7 +239,7 @@ export function SectionEditor({
                                             placeholder="e.g. Premium Hero Video"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="h-12 text-sm font-bold border-none shadow-none surface-high focus-visible:ring-black rounded-xl"
+                                            className="h-12 text-sm font-bold border-none shadow-none bg-white dark:bg-zinc-900 focus-visible:ring-black rounded-xl transition-all hover:scale-[1.01]"
                                             required
                                         />
                                     </div>
@@ -234,17 +250,17 @@ export function SectionEditor({
                                             placeholder="e.g. Hero"
                                             value={category}
                                             onChange={(e) => setCategory(e.target.value)}
-                                            className="h-12 text-sm font-bold border-none shadow-none surface-high focus-visible:ring-black rounded-xl"
+                                            className="h-12 text-sm font-bold border-none shadow-none bg-white dark:bg-zinc-900 focus-visible:ring-black rounded-xl transition-all hover:scale-[1.01]"
                                         />
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-none surface p-1">
+                            <Card className="border-none bg-zinc-50/50 dark:bg-zinc-900/30 p-1 group hover:bg-zinc-100/50 transition-colors">
                                 <CardHeader className="p-5 pb-2">
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Visual Preview</CardTitle>
-                                        <ImageIcon className="h-3 w-3 text-zinc-300" />
+                                        <ImageIcon className="h-3 w-3 text-zinc-300 group-hover:text-primary transition-colors" />
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-5 pt-0 space-y-4">
@@ -256,7 +272,7 @@ export function SectionEditor({
                                                 placeholder="https://... or paste link"
                                                 value={previewImage}
                                                 onChange={(e) => setPreviewImage(e.target.value)}
-                                                className="h-10 text-xs font-bold border-none shadow-none surface-high focus-visible:ring-black rounded-xl"
+                                                className="h-10 text-xs font-bold border-none shadow-none bg-white dark:bg-zinc-900 focus-visible:ring-black rounded-xl"
                                             />
                                             <div className="relative">
                                                 <input
@@ -270,36 +286,54 @@ export function SectionEditor({
                                                     type="button"
                                                     onClick={() => document.getElementById('fileUpload')?.click()}
                                                     variant="outline"
-                                                    className="h-10 w-10 p-0 rounded-xl surface-high border-none hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                    className="h-10 w-10 p-0 rounded-xl bg-white dark:bg-zinc-900 border-none hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all hover:rotate-12"
                                                 >
                                                     <Upload className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </div>
                                     </div>
-                                    {previewImage && (
-                                        <div className="relative aspect-video rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-                                            <Image
-                                                src={previewImage}
-                                                alt="Section Preview"
-                                                fill
-                                                className="object-cover"
-                                                unoptimized
-                                            />
-                                            <button
-                                                onClick={() => setPreviewImage("")}
-                                                className="absolute top-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                    <AnimatePresence mode="wait">
+                                        {previewImage ? (
+                                            <motion.div
+                                                key="preview"
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                className="relative aspect-video rounded-xl overflow-hidden border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 group"
                                             >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    )}
+                                                <Image
+                                                    src={previewImage}
+                                                    alt="Section Preview"
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    unoptimized
+                                                />
+                                                <button
+                                                    onClick={() => setPreviewImage("")}
+                                                    className="absolute top-2 right-2 p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-red-500"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </motion.div>
+                                        ) : (
+                                            <div className="aspect-video rounded-xl border-2 border-dashed border-zinc-100 dark:border-zinc-800 flex items-center justify-center bg-zinc-50/50">
+                                                <ImageIcon className="h-8 w-8 text-zinc-200" />
+                                            </div>
+                                        )}
+                                    </AnimatePresence>
                                 </CardContent>
                             </Card>
+                        </motion.div>
 
-                            <Card className="border-none surface p-1">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-8"
+                        >
+                            <Card className="border-none bg-zinc-50/50 dark:bg-zinc-900/30 p-1">
                                 <CardHeader className="p-5 pb-2">
-                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Niche Tags</CardTitle>
+                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Target Audiences</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-5 pt-0">
                                     <div className="flex flex-wrap gap-2 mt-2">
@@ -311,7 +345,7 @@ export function SectionEditor({
                                                     prev.includes(niche) ? prev.filter(n => n !== niche) : [...prev, niche]
                                                 )}
                                                 className={`rounded-xl px-4 py-2.5 text-[10px] font-black transition-all border-2 active:scale-95 ${niches.includes(niche)
-                                                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
+                                                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-xl translate-y-[-2px]"
                                                     : "bg-white text-zinc-500 border-transparent hover:border-zinc-200 dark:bg-zinc-900 dark:text-zinc-400"
                                                     }`}
                                             >
@@ -321,76 +355,93 @@ export function SectionEditor({
                                     </div>
                                 </CardContent>
                             </Card>
-                        </div>
 
-                        <Card className="border-none surface p-1">
-                            <CardHeader className="p-5 pb-2">
-                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Metadata Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-5 pt-0">
-                                <Textarea
-                                    id="description"
-                                    placeholder="Technical description for other developers..."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="min-h-[100px] text-sm font-medium border-none shadow-none surface-high focus-visible:ring-black rounded-xl resize-none p-4"
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <div className="relative group/editor rounded-[2.5rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] border border-white/10">
-                            <div className="bg-[#0a0a0a] px-8 py-5 flex items-center justify-between border-b border-white/5">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex gap-2">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-[#FF5F56] shadow-[0_0_10px_rgba(255,95,86,0.3)]"></div>
-                                        <div className="w-3.5 h-3.5 rounded-full bg-[#FFBD2E] shadow-[0_0_10px_rgba(255,189,46,0.3)]"></div>
-                                        <div className="w-3.5 h-3.5 rounded-full bg-[#27C93F] shadow-[0_0_10px_rgba(39,201,63,0.3)]"></div>
-                                    </div>
-                                    <div className="h-4 w-px bg-white/10"></div>
-                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Module.liquid</span>
-                                </div>
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                                        <span className="text-[9px] font-black text-green-500 uppercase tracking-widest">Syntax Active</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-[#0d0d0d]">
-                                <form onSubmit={handleSubmit} className="relative">
+                            <Card className="border-none bg-zinc-50/50 dark:bg-zinc-900/30 p-1">
+                                <CardHeader className="p-5 pb-2">
+                                    <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">System Metadata</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-5 pt-0">
                                     <Textarea
-                                        id="code"
-                                        className="font-mono text-[14px] min-h-[700px] p-10 leading-[1.8] bg-transparent text-zinc-300 border-0 focus-visible:ring-0 rounded-none scrollbar-hide selection:bg-primary/40"
-                                        value={code}
-                                        onChange={(e) => setCode(e.target.value)}
-                                        spellCheck={false}
+                                        id="description"
+                                        placeholder="Add development notes, dependency info, or usage guides..."
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        className="min-h-[100px] text-sm font-medium border-none shadow-none bg-white dark:bg-zinc-900 focus-visible:ring-black rounded-xl resize-none p-4"
                                     />
-                                    <div className="absolute bottom-12 right-12 z-10">
-                                        <Button
-                                            type="submit"
-                                            size="lg"
-                                            className={`group relative overflow-hidden h-16 px-12 rounded-[1.25rem] font-black transition-all active:scale-95 ${isLoading ? "bg-zinc-800" : "bg-white text-black hover:scale-105"
-                                                }`}
-                                            disabled={isLoading}
-                                        >
-                                            <span className="relative z-10 flex items-center gap-3">
-                                                {isLoading ? (
-                                                    <>
-                                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                                        {mode === 'edit' ? 'Updating...' : 'Deploying Module...'}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        {mode === 'edit' ? 'Update Section' : 'Ship Section'} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                                                    </>
-                                                )}
-                                            </span>
-                                            {!isLoading && <div className="absolute inset-0 bg-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />}
-                                        </Button>
+                                </CardContent>
+                            </Card>
+
+                            <div className="relative group/editor rounded-[3rem] overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] border border-white/5 bg-[#0a0a0a]">
+                                <div className="bg-[#0a0a0a] px-10 py-6 flex items-center justify-between border-b border-white/5">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex gap-2">
+                                            <div className="w-3.5 h-3.5 rounded-full bg-[#FF5F56]"></div>
+                                            <div className="w-3.5 h-3.5 rounded-full bg-[#FFBD2E]"></div>
+                                            <div className="w-3.5 h-3.5 rounded-full bg-[#27C93F]"></div>
+                                        </div>
+                                        <div className="h-4 w-px bg-white/10"></div>
+                                        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Runtime_Core.liquid</span>
                                     </div>
-                                </form>
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                                            <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Hydration Mode</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <form onSubmit={handleSubmit} className="relative">
+                                        <Textarea
+                                            id="code"
+                                            className="font-mono text-[14px] min-h-[750px] p-10 leading-[1.8] bg-transparent text-zinc-400 border-0 focus-visible:ring-0 rounded-none scrollbar-hide selection:bg-primary/40 focus:text-zinc-200 transition-colors"
+                                            value={code}
+                                            onChange={(e) => setCode(e.target.value)}
+                                            spellCheck={false}
+                                        />
+                                        <div className="absolute bottom-12 right-12 z-10 flex items-center gap-4">
+                                            <div className="hidden lg:block text-right">
+                                                <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Unsaved Changes</p>
+                                                <p className="text-[10px] font-bold text-white/60 italic">Autosave disabled</p>
+                                            </div>
+                                            <Button
+                                                type="submit"
+                                                size="lg"
+                                                className={`group relative overflow-hidden h-16 px-12 rounded-[1.25rem] font-black transition-all active:scale-95 shadow-2xl ${isLoading ? "bg-zinc-800" : "bg-white text-black hover:scale-105"
+                                                    }`}
+                                                disabled={isLoading}
+                                            >
+                                                <span className="relative z-10 flex items-center gap-3">
+                                                    {isLoading ? (
+                                                        <>
+                                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {mode === 'edit' ? 'Commit Update' : 'Ship to Platform'} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                                                        </>
+                                                    )}
+                                                </span>
+                                                {!isLoading && <div className="absolute inset-0 bg-primary opacity-0 transition-opacity group-hover:opacity-100" />}
+                                                {!isLoading && <div className="absolute inset-0 bg-gradient-to-tr from-primary to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />}
+                                                <span className="relative z-10 flex items-center gap-3 group-hover:text-white transition-colors">
+                                                    {isLoading ? (
+                                                        <>
+                                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                                            Shipment in Progress
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {mode === 'edit' ? 'Update Section' : 'Ship Section'} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                                                        </>
+                                                    )}
+                                                </span>
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
 
                     {/* Resizer */}
@@ -398,19 +449,19 @@ export function SectionEditor({
                         onMouseDown={startResizing}
                         className={`hidden md:flex w-2 hover:w-3 bg-transparent cursor-col-resize items-center justify-center transition-all group z-40 relative touch-none select-none ${isResizing ? "w-3" : ""}`}
                     >
-                        <div className={`absolute inset-y-0 w-[2px] bg-zinc-100 group-hover:bg-black/20 transition-colors ${isResizing ? "bg-black/40 w-[3px]" : ""}`} />
-                        <div className={`w-6 h-12 bg-white border border-zinc-200 shadow-2xl rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10 hover:scale-110 active:scale-125 ${isResizing ? "opacity-100 scale-125" : ""}`}>
+                        <div className={`absolute inset-y-0 w-[2px] bg-zinc-100 dark:bg-zinc-900 group-hover:bg-primary/20 transition-colors ${isResizing ? "bg-primary/40 w-[3px]" : ""}`} />
+                        <div className={`w-8 h-12 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all z-10 hover:scale-110 active:scale-125 ${isResizing ? "opacity-100 scale-125 bg-primary text-white border-primary" : ""}`}>
                             <div className="flex gap-[1px]">
-                                <div className="w-[1.5px] h-3 bg-zinc-300 rounded-full" />
-                                <div className="w-[1.5px] h-3 bg-zinc-300 rounded-full" />
-                                <div className="w-[1.5px] h-3 bg-zinc-300 rounded-full" />
+                                <div className={`w-[1.5px] h-3 rounded-full ${isResizing ? "bg-white" : "bg-zinc-300"}`} />
+                                <div className={`w-[1.5px] h-3 rounded-full ${isResizing ? "bg-white" : "bg-zinc-300"}`} />
+                                <div className={`w-[1.5px] h-3 rounded-full ${isResizing ? "bg-white" : "bg-zinc-300"}`} />
                             </div>
                         </div>
                     </div>
 
                     {/* Right: Live Preview */}
                     <div
-                        className="md:pl-6 lg:pl-16 flex-1 bg-zinc-50/20"
+                        className="md:pl-6 lg:pl-16 flex-1 bg-[#fafafa] dark:bg-black/50"
                         style={{
                             width: isLargeScreen ? `${100 - leftWidth}%` : '100%',
                             flex: 'none'
@@ -418,74 +469,87 @@ export function SectionEditor({
                     >
                         <div className="md:sticky md:top-8 space-y-8 pt-4">
                             {/* Device Switcher */}
-                            <div className="flex items-center justify-between">
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex items-center justify-between"
+                            >
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1.5 p-1.5 bg-white border border-zinc-100 rounded-2xl shadow-sm">
+                                    <div className="flex items-center gap-1.5 p-1.5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl shadow-sm">
                                         {[
-                                            { id: 'mobile', icon: Smartphone },
-                                            { id: 'tablet', icon: Tablet },
-                                            { id: 'desktop', icon: Monitor }
+                                            { id: 'mobile', icon: Smartphone, label: '375px' },
+                                            { id: 'tablet', icon: Tablet, label: '768px' },
+                                            { id: 'desktop', icon: Monitor, label: 'Full' }
                                         ].map((device) => (
                                             <button
                                                 key={device.id}
                                                 onClick={() => setPreviewDevice(device.id as 'desktop' | 'tablet' | 'mobile')}
-                                                className={`p-2 rounded-xl transition-all ${previewDevice === device.id
-                                                    ? "bg-black text-white shadow-lg"
-                                                    : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                                                className={`p-2 rounded-xl transition-all relative group/btn ${previewDevice === device.id
+                                                    ? "bg-black text-white dark:bg-white dark:text-black shadow-lg"
+                                                    : "text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-600"
                                                     }`}
                                             >
                                                 <device.icon className="h-4 w-4" />
+                                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-[8px] font-black rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none uppercase">
+                                                    {device.label}
+                                                </div>
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="h-4 w-px bg-zinc-200"></div>
+                                    <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800"></div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]"></div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 italic">Liquid Engine Alpha</span>
+                                        <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]"></div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100 italic">Liquid 2.0.4 Alpha</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[9px] font-black pointer-events-none text-zinc-300 uppercase tracking-[0.2em]">Scale: Auto</span>
+                                    <span className="text-[9px] font-black pointer-events-none text-zinc-300 dark:text-zinc-700 uppercase tracking-[0.2em]">Context: Global</span>
                                 </div>
-                            </div>
+                            </motion.div>
 
                             {/* Preview Container */}
                             <div className="flex justify-center transition-all duration-500 ease-in-out">
-                                <div
-                                    className="bg-white rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] border border-zinc-100 overflow-hidden relative group h-[calc(100vh-280px)] max-h-[1000px] transition-all duration-500"
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-white dark:bg-black rounded-[3rem] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_60px_120px_-20px_rgba(0,0,0,0.5)] border border-zinc-100 dark:border-zinc-900 overflow-hidden relative group h-[calc(100vh-280px)] max-h-[1000px] transition-all duration-500"
                                     style={{ width: getPreviewWidth() }}
                                 >
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/2 z-10 pointer-events-none">
-                                        <div className="bg-white/90 backdrop-blur-xl px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl border border-white/50 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                                            Interactive Canvas
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/2 dark:bg-white/2 z-10 pointer-events-none">
+                                        <div className="bg-white/90 dark:bg-black/90 backdrop-blur-xl px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl border border-white/50 dark:border-white/10 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                                            Simulation Environment
                                         </div>
                                     </div>
                                     <div className="w-full h-full overflow-hidden">
                                         <DynamicPreview code={code} className="w-full h-full" />
                                     </div>
-                                </div>
+                                </motion.div>
                             </div>
 
                             {/* Technical Specs */}
-                            <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm space-y-6">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white dark:bg-zinc-950 p-10 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-900 shadow-sm space-y-8"
+                            >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 bg-black"></div>
-                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-black">Module Specifications</h4>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-3 h-3 bg-primary rounded-full animate-ping"></div>
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-black dark:text-white leading-none">Module Specifications</h4>
                                     </div>
-                                    <span className="text-[9px] font-bold text-zinc-400">Ver: 1.0.4</span>
+                                    <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Build ID: STUDIO-XRAY-42</span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-zinc-50 rounded-2xl">
-                                        <code className="text-[10px] block font-black mb-1 opacity-50">{"{% SCHEMA %}"}</code>
-                                        <p className="text-[10px] font-bold text-zinc-600 leading-tight">Configures theme settings panel.</p>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all hover:translate-y-[-2px] group">
+                                        <code className="text-[10px] block font-black mb-2 opacity-30 uppercase tracking-widest group-hover:opacity-100 transition-opacity">schema.json</code>
+                                        <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight">Native Shopify settings definition for Merchant customization.</p>
                                     </div>
-                                    <div className="p-4 bg-zinc-50 rounded-2xl">
-                                        <code className="text-[10px] block font-black mb-1 opacity-50">{"{% BLOCKS %}"}</code>
-                                        <p className="text-[10px] font-bold text-zinc-600 leading-tight">Enables dynamic content stacking.</p>
+                                    <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all hover:translate-y-[-2px] group">
+                                        <code className="text-[10px] block font-black mb-2 opacity-30 uppercase tracking-widest group-hover:opacity-100 transition-opacity">blocks.config</code>
+                                        <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 leading-tight">Iterative content block injection for multi-layout support.</p>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
@@ -493,3 +557,4 @@ export function SectionEditor({
         </div>
     );
 }
+

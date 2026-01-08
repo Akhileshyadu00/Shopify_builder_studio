@@ -63,6 +63,11 @@ export const Navbar = () => {
                         <Link href="/" className="hover:text-primary transition-colors hover:translate-y-[-1px] active:translate-y-[1px]">Home</Link>
                         <Link href="/sections" className="hover:text-primary transition-colors hover:translate-y-[-1px] active:translate-y-[1px]">Library</Link>
                         <Link href="/upload" className="hover:text-primary transition-colors hover:translate-y-[-1px] active:translate-y-[1px]">Create</Link>
+                        {user?.role === 'admin' && (
+                            <Link href="/admin" className="text-primary hover:opacity-80 transition-all hover:translate-y-[-1px] flex items-center gap-1.5">
+                                <span className="bg-primary/10 px-2 py-0.5 rounded text-[9px] border border-primary/20">Admin</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
 
@@ -159,6 +164,9 @@ export const Navbar = () => {
                             <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
                             <Link href="/sections" onClick={() => setIsMobileMenuOpen(false)}>Sections</Link>
                             <Link href="/upload" onClick={() => setIsMobileMenuOpen(false)}>Create Section</Link>
+                            {user?.role === 'admin' && (
+                                <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="text-primary font-black">Admin Panel</Link>
+                            )}
                             <div className="relative flex items-center mb-2">
                                 <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
                                 <form onSubmit={handleSearch} className="w-full">

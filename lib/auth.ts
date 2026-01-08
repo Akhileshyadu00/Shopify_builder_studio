@@ -15,6 +15,7 @@ declare module "next-auth" {
     interface Session {
         user: {
             id: string;
+            role: string;
             name?: string | null;
             email?: string | null;
             image?: string | null;
@@ -23,20 +24,28 @@ declare module "next-auth" {
 
     interface User {
         id: string;
+        role: string;
+    }
+}
+
+declare module "next-auth/adapters" {
+    interface AdapterUser {
+        role: string;
     }
 }
 
 declare module "next-auth/jwt" {
     interface JWT {
         id: string;
+        role: string;
     }
 }
 
 export const authOptions: NextAuthOptions = {
     // We only use the adapter if MONGODB_URI is available
-    adapter: process.env.MONGODB_URI ? MongoDBAdapter(clientPromise, {
+    adapter: process.env.MONGODB_URI ? (MongoDBAdapter(clientPromise, {
         databaseName: "shopify_builder",
-    }) : undefined,
+    }) as any) : undefined,
 
     providers: [
         CredentialsProvider({
@@ -73,6 +82,7 @@ export const authOptions: NextAuthOptions = {
                         id: user._id.toString(),
                         email: user.email,
                         name: user.name,
+                        role: user.role || "user",
                     };
                 } catch (error) {
                     console.error("Authentication error:", error);
@@ -98,12 +108,14 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                token.role = user.role;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
+                session.user.role = token.role as string;
             }
             return session;
         },
