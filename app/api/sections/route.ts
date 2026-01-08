@@ -17,7 +17,7 @@ export async function GET(req: Request) {
             if (!session) {
                 return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
             }
-            query = { userId: (session.user as any).id };
+            query = { userId: session.user.id };
         }
 
         const sections = await db.collection("custom_sections").find(query).sort({ createdAt: -1 }).toArray();
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
             javascript,
             schema,
             isCustom: true,
-            userId: (session.user as any).id,
+            userId: session.user.id,
             likes: 0,
             saves: 0,
             createdAt: new Date(),
@@ -103,7 +103,7 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: "Section not found" }, { status: 404 });
         }
 
-        if (existingSection.userId !== (session.user as any).id) {
+        if (existingSection.userId !== session.user.id) {
             return NextResponse.json({ error: "Unauthorized to edit this section" }, { status: 403 });
         }
 
@@ -151,7 +151,7 @@ export async function DELETE(req: Request) {
         // Only allow deleting sections created by the user
         const result = await db.collection("custom_sections").deleteOne({
             slug,
-            userId: (session.user as any).id
+            userId: session.user.id
         });
 
         if (result.deletedCount === 0) {

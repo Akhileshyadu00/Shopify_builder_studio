@@ -21,13 +21,6 @@ export default function UploadPage() {
         setMounted(true);
     }, []);
 
-    // Auth check
-    useEffect(() => {
-        if (mounted && status === "unauthenticated") {
-            toast.error("Please login to upload sections");
-            router.push("/");
-        }
-    }, [status, router, mounted]);
 
     if (!mounted || status === "loading") {
         return (

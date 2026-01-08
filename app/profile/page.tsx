@@ -13,11 +13,6 @@ export default function ProfilePage() {
     const router = useRouter();
     const { mySections, fetchMySections, isLoading, mounted } = useSectionStore();
 
-    useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push("/");
-        }
-    }, [status, router]);
 
     useEffect(() => {
         if (status === "authenticated") {

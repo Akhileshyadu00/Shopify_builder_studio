@@ -10,7 +10,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const userId = (session.user as any).id;
+        const userId = session.user.id;
         const { slug, action } = await req.json();
 
         if (!slug || !["like", "save"].includes(action)) {
@@ -95,7 +95,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ likedSlugs: [], savedSlugs: [] });
         }
 
-        const userId = (session.user as any).id;
+        const userId = session.user.id;
         const client = await clientPromise;
         const db = client.db("shopify_builder");
 
