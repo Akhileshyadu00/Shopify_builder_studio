@@ -12,20 +12,19 @@ import { toast } from "sonner";
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useMounted } from "@/lib/hooks";
 
 
 export const Navbar = () => {
     const { theme, setTheme } = useTheme();
     const { data: session } = useSession();
     const router = useRouter();
-    const [mounted, setMounted] = React.useState(false);
+    const mounted = useMounted();
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    React.useEffect(() => {
-        setMounted(true);
-    }, []);
+    // No manual setMounted needed, handled by hook
 
     const handleLogout = async () => {
         await signOut({ redirect: false });
@@ -54,7 +53,7 @@ export const Navbar = () => {
                             <span className="text-white dark:text-black font-black font-serif text-xl italic leading-none">S</span>
                         </div>
                         <div className="flex flex-col leading-none">
-                            <span className="font-black text-base tracking-tighter uppercase italic">Section</span>
+                            <span className="font-black text-base tracking-tighter uppercase italic text-black dark:text-white">Section</span>
                             <span className="font-black text-[10px] tracking-[0.4em] uppercase text-zinc-400">Studio</span>
                         </div>
                     </Link>
@@ -63,9 +62,14 @@ export const Navbar = () => {
                         <Link href="/" className="hover:text-primary transition-colors hover:translate-y-[-1px] active:translate-y-[1px]">Home</Link>
                         <Link href="/sections" className="hover:text-primary transition-colors hover:translate-y-[-1px] active:translate-y-[1px]">Library</Link>
                         <Link href="/upload" className="hover:text-primary transition-colors hover:translate-y-[-1px] active:translate-y-[1px]">Create</Link>
-                        {user?.role === 'admin' && (
-                            <Link href="/admin" className="text-primary hover:opacity-80 transition-all hover:translate-y-[-1px] flex items-center gap-1.5">
-                                <span className="bg-primary/10 px-2 py-0.5 rounded text-[9px] border border-primary/20">Admin</span>
+                        {mounted && user && (
+                            <Link href="/admin" className="text-primary hover:opacity-80 transition-all hover:translate-y-[-1px] flex items-center gap-1.5 group">
+                                <span className={`px-2.5 py-1 rounded-full text-[9px] border transition-all font-black ${user.role === 'admin'
+                                    ? "bg-primary/10 border-primary/20 text-primary group-hover:bg-primary/20"
+                                    : "bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 group-hover:text-black dark:group-hover:text-white"
+                                    }`}>
+                                    Portal
+                                </span>
                             </Link>
                         )}
                     </div>
@@ -112,7 +116,7 @@ export const Navbar = () => {
                         </button>
 
                         <div className="hidden md:flex items-center gap-4">
-                            {user ? (
+                            {mounted && user ? (
                                 <div className="flex items-center gap-6">
                                     <div className="flex items-center gap-2 px-4 py-2 bg-zinc-50 dark:bg-zinc-900/50 rounded-full border border-zinc-100 dark:border-zinc-800 transition-colors">
                                         <div className="h-5 w-5 rounded-full bg-black dark:bg-white flex items-center justify-center">
@@ -130,7 +134,7 @@ export const Navbar = () => {
                                         Exit
                                     </button>
                                 </div>
-                            ) : (
+                            ) : mounted && (
                                 <div className="flex items-center gap-3">
                                     <AuthModal defaultTab="login">
                                         <button className="text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 hover:text-primary transition-colors">Sign In</button>

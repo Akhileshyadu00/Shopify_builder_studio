@@ -150,7 +150,7 @@ export async function DELETE(req: Request) {
         const db = client.db("shopify_builder");
 
         const isAdmin = session.user.role === "admin";
-        let query: any = { slug };
+        const query: any = { slug };
 
         if (!isAdmin) {
             query.userId = session.user.id;

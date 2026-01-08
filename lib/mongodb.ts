@@ -1,7 +1,10 @@
 import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
-const options = {};
+const options = {
+    connectTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 5000,
+};
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
@@ -25,14 +28,17 @@ if (!uri) {
             };
 
             if (!globalWithMongo._mongoClientPromise) {
+                console.log("Initializing New MongoDB Client (Dev Mode)...");
                 client = new MongoClient(uri, options);
                 globalWithMongo._mongoClientPromise = client.connect()
                     .then(client => {
-                        console.log(`MongoDB Connected Successfully to: ${dbName} (Dev)`);
+                        console.log(`✅ MongoDB Connected Successfully: ${dbName}`);
                         return client;
                     })
                     .catch(err => {
-                        console.error("MongoDB Connection Error (Dev):", err);
+                        console.error("❌ MongoDB Connection Failure:", err);
+                        // Clear the rejected promise so we can try again on next request
+                        delete globalWithMongo._mongoClientPromise;
                         throw err;
                     });
             }

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { ObjectId } from "mongodb";
+import bcrypt from "bcryptjs";
 
 async function isAdmin() {
     const session = await getServerSession(authOptions);
@@ -27,13 +29,62 @@ export async function GET() {
     }
 }
 
-export async function PUT(req: Request) {
+export async function POST(req: Request) {
     if (!(await isAdmin())) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
+        const { name, email, password, role } = await req.json();
+
+        if (!name || !email || !password) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("shopify_builder");
+
+        const existingUser = await db.collection("users").findOne({ email });
+        if (existingUser) {
+            return NextResponse.json({ error: "User already exists" }, { status: 400 });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const result = await db.collection("users").insertOne({
+            name,
+            email,
+            password: hashedPassword,
+            role: role || "user",
+            createdAt: new Date(),
+        });
+
+        return NextResponse.json({
+            success: true,
+            userId: result.insertedId
+        }, { status: 201 });
+    } catch (error) {
+        console.error("Admin Create User Error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function PUT(req: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
         const { userId, role } = await req.json();
+
+        // Check for Admin status or Self-promotion (for the Studio onboarding)
+        const isAdmin = session.user.role === "admin";
+        const isSelfPromotion = session.user.id === userId && role === "admin";
+
+        if (!isAdmin && !isSelfPromotion) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         if (!userId || !role) {
             return NextResponse.json({ error: "Missing userId or role" }, { status: 400 });
@@ -41,7 +92,6 @@ export async function PUT(req: Request) {
 
         const client = await clientPromise;
         const db = client.db("shopify_builder");
-        const { ObjectId } = require("mongodb");
 
         let filter: any;
         try {
@@ -86,7 +136,6 @@ export async function DELETE(req: Request) {
         if (type === "section") {
             await db.collection("custom_sections").deleteOne({ slug: id });
         } else if (type === "user") {
-            const { ObjectId } = require("mongodb");
             let filter: any;
             try {
                 filter = { _id: new ObjectId(id) };
