@@ -3,13 +3,11 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, Loader2, CheckCircle2, AlertCircle, Key, ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Lock, Key, Loader2, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
-function ResetPasswordForm() {
+function ResetPasswordContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
@@ -21,8 +19,8 @@ function ResetPasswordForm() {
 
     useEffect(() => {
         if (!token) {
-            toast.error("Invalid or missing reset token");
-            router.push("/auth/forgot-password");
+            toast.error("Invalid state: Reset token missing");
+            router.replace("/");
         }
     }, [token, router]);
 
@@ -35,7 +33,7 @@ function ResetPasswordForm() {
         }
 
         if (password.length < 8) {
-            toast.error("Password must be at least 8 characters");
+            toast.error("Security key must be at least 8 characters");
             return;
         }
 
@@ -48,130 +46,135 @@ function ResetPasswordForm() {
                 body: JSON.stringify({ token, password }),
             });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Something went wrong");
+            if (res.ok) {
+                setIsSuccess(true);
+                toast.success("Security key updated");
+                setTimeout(() => router.push("/"), 3000);
+            } else {
+                const data = await res.json();
+                toast.error(data.message || "Failed to reset security key");
             }
-
-            setIsSuccess(true);
-            toast.success("Password reset successful!");
-            setTimeout(() => {
-                router.push("/");
-            }, 3000);
-        } catch (error: any) {
-            toast.error(error.message);
+        } catch (error) {
+            toast.error("Comm link failure: Procedure aborted");
         } finally {
             setIsLoading(false);
         }
     };
 
-    if (isSuccess) {
-        return (
-            <div className="text-center space-y-8 py-10">
-                <div className="h-20 w-20 bg-primary/10 border border-primary/20 rounded-full mx-auto flex items-center justify-center">
-                    <CheckCircle2 className="h-10 w-10 text-primary" />
-                </div>
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Access <span className="text-primary italic">Restored</span></h2>
-                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">Redirecting to primary terminal...</p>
-                </div>
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all shadow-xl"
-                >
-                    Manual Entry <ArrowRight className="h-3 w-3" />
-                </Link>
-            </div>
-        );
-    }
+    if (!token) return null;
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-                <div className="space-y-1.5">
-                    <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest ml-2">New Access Key</label>
-                    <div className="relative">
-                        <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
-                        <Input
-                            type="password"
-                            placeholder="••••••••"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="pl-12 h-14 bg-black/40 border-zinc-800 rounded-2xl font-bold focus:ring-primary/20 text-white"
-                        />
-                    </div>
-                </div>
+        <main className="min-h-screen bg-[#fafafa] dark:bg-black selection:bg-primary/30 flex items-center justify-center p-6 relative overflow-hidden">
+            {/* Background elements */}
+            <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
 
-                <div className="space-y-1.5">
-                    <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest ml-2">Confirm Access Key</label>
-                    <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
-                        <Input
-                            type="password"
-                            placeholder="••••••••"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            className="pl-12 h-14 bg-black/40 border-zinc-800 rounded-2xl font-bold focus:ring-primary/20 text-white"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <button
-                disabled={isLoading}
-                className="w-full h-16 bg-primary text-black rounded-2xl font-black uppercase text-xs tracking-[0.3em] flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl disabled:opacity-50"
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-md relative z-10"
             >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Identity & Reset"}
-            </button>
-        </form>
+                <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-[3rem] p-12 shadow-2xl">
+                    {!isSuccess ? (
+                        <div className="space-y-8">
+                            <header className="space-y-2">
+                                <h1 className="text-4xl font-black uppercase tracking-tighter italic">
+                                    New <span className="text-primary italic">Secret</span>
+                                </h1>
+                                <p className="text-zinc-500 font-bold text-sm leading-relaxed">
+                                    Define a robust access key to conclude the identity recovery procedure.
+                                </p>
+                            </header>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] ml-2 font-mono">ENCRYPTED_KEY_V1</label>
+                                    <div className="relative">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                                        <input
+                                            type="password"
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Enter new access key"
+                                            className="w-full pl-12 pr-6 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-zinc-400 tracking-[0.2em] ml-2 font-mono">VERIFY_KEY_STRENGTH</label>
+                                    <div className="relative">
+                                        <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                                        <input
+                                            type="password"
+                                            required
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="Confirm new access key"
+                                            className="w-full pl-12 pr-6 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full bg-black text-white dark:bg-white dark:text-black py-5 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <ShieldAlert className="h-4 w-4" />}
+                                    Finalize Override
+                                </button>
+                            </form>
+                        </div>
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="text-center space-y-8 py-10"
+                        >
+                            <div className="h-24 w-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_-10px_rgba(255,255,255,0.5)] dark:shadow-primary/30">
+                                <CheckCircle2 className="h-12 w-12 text-black" />
+                            </div>
+                            <header className="space-y-2">
+                                <h2 className="text-3xl font-black uppercase tracking-tight">Identity Restored</h2>
+                                <p className="text-zinc-500 font-bold text-sm leading-relaxed">
+                                    Your secure access credentials have been synchronized successfully.
+                                </p>
+                            </header>
+                            <div className="pt-4">
+                                <div className="h-1 w-full bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: "100%" }}
+                                        transition={{ duration: 3, ease: "linear" }}
+                                        className="h-full bg-primary"
+                                    />
+                                </div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-4 animate-pulse">
+                                    Redirecting to Control Center...
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+
+                <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-10">
+                    High Security Environment &bull; AES-256 Equivalent
+                </p>
+            </motion.div>
+        </main>
     );
 }
 
 export default function ResetPasswordPage() {
     return (
-        <main className="min-h-screen bg-black text-white selection:bg-primary/50 flex items-center justify-center p-6 relative overflow-hidden font-mono">
-            {/* Background Effects */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-black">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-
-            <div className="max-w-md w-full relative z-10">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 p-8 rounded-[2.5rem] shadow-2xl space-y-8"
-                >
-                    <div className="space-y-4 text-center">
-                        <div className="mx-auto w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6">
-                            <Lock className="h-6 w-6 text-primary" />
-                        </div>
-                        <h1 className="text-3xl font-black uppercase tracking-tighter italic">
-                            Reset <span className="text-primary italic">Access</span>
-                        </h1>
-                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
-                            Overwrite credentials sequence v4.2
-                        </p>
-                    </div>
-
-                    <Suspense fallback={
-                        <div className="flex flex-col items-center justify-center py-20 gap-4">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Initializing Reset Module...</p>
-                        </div>
-                    }>
-                        <ResetPasswordForm />
-                    </Suspense>
-
-                    <div className="pt-4 border-t border-zinc-800 text-center">
-                        <p className="text-[8px] text-zinc-600 font-black uppercase tracking-[0.2em]">
-                            Secure Reset Protocol 4096-bit Encryption
-                        </p>
-                    </div>
-                </motion.div>
-            </div>
-        </main>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
     );
 }

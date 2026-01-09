@@ -7,7 +7,9 @@ import { SectionCard } from "@/components/shared/SectionCard";
 import { useSectionStore } from "@/lib/section-store";
 import { Loader2, Plus, Layout, User, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export default function ProfilePage() {
     const { data: session, status } = useSession();
@@ -87,9 +89,13 @@ export default function ProfilePage() {
                                         <Mail className="h-4 w-4" /> {session.user?.email}
                                     </span>
                                     <span className="hidden md:inline">•</span>
-                                    <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-500 dark:text-zinc-400 uppercase tracking-widest text-[10px]">
-                                        Member since {new Date().getFullYear()}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <Link href="/profile/change-password">
+                                            <button className="flex items-center gap-1.5 px-3 py-1 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 text-[10px] font-black rounded-lg uppercase tracking-widest border border-zinc-200 dark:border-zinc-800 hover:border-primary/30 transition-all">
+                                                Update Security Key
+                                            </button>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>

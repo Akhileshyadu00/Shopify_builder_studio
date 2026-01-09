@@ -20,30 +20,38 @@ interface UserEditModalProps {
 
 export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModalProps) {
     const [role, setRole] = useState(user?.role || "user");
+    const [newPassword, setNewPassword] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
 
     React.useEffect(() => {
-        if (user) setRole(user.role);
-    }, [user]);
+        if (user) {
+            setRole(user.role);
+            setNewPassword("");
+        }
+    }, [user, isOpen]);
 
-    const handleUpdateRole = async () => {
+    const handleUpdateUser = async () => {
         setIsUpdating(true);
         try {
             const res = await fetch("/api/admin", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: user._id, role }),
+                body: JSON.stringify({
+                    userId: user._id,
+                    role,
+                    newPassword: newPassword || undefined
+                }),
             });
 
             if (res.ok) {
-                toast.success(`Role updated to ${role}`);
+                toast.success(newPassword ? "User role and password updated" : `Role updated to ${role}`);
                 onSuccess();
                 onClose();
             } else {
-                toast.error("Failed to update role");
+                toast.error("Failed to update identity records");
             }
         } catch (error) {
-            toast.error("An error occurred");
+            toast.error("Comm link failure: Update aborted");
         } finally {
             setIsUpdating(false);
         }
@@ -62,9 +70,9 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black">
                                 {user?.name?.[0].toUpperCase()}
                             </div>
-                            <div>
-                                <p className="font-bold text-sm">{user?.name}</p>
-                                <p className="text-xs text-zinc-400">{user?.email}</p>
+                            <div className="overflow-hidden">
+                                <p className="font-bold text-sm truncate">{user?.name}</p>
+                                <p className="text-xs text-zinc-400 truncate">{user?.email}</p>
                             </div>
                         </div>
                     </div>
@@ -87,15 +95,25 @@ export function UserEditModal({ user, isOpen, onClose, onSuccess }: UserEditModa
                             </TabsList>
                         </Tabs>
                     </div>
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Manual Password Reset</Label>
+                        <Input
+                            type="password"
+                            placeholder="New secure access key (leave blank to keep current)"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="h-12 border-zinc-200 dark:border-zinc-800 rounded-xl font-bold bg-zinc-50 dark:bg-zinc-900 focus:ring-primary/20 text-xs"
+                        />
+                    </div>
                 </div>
                 <DialogFooter>
                     <Button
-                        onClick={handleUpdateRole}
+                        onClick={handleUpdateUser}
                         disabled={isUpdating}
                         className="w-full h-12 rounded-xl font-black uppercase text-xs tracking-widest bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 group"
                     >
                         {isUpdating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShieldCheck className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />}
-                        Commit Permissions
+                        Commit Changes
                     </Button>
                 </DialogFooter>
             </DialogContent>

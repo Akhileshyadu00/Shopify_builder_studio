@@ -13,25 +13,30 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        if (password.length < 8) {
+            return NextResponse.json(
+                { message: "Password must be at least 8 characters long" },
+                { status: 400 }
+            );
+        }
+
         const client = await clientPromise;
         const db = client.db("shopify_builder");
 
         const user = await db.collection("users").findOne({
             resetToken: token,
-            resetTokenExpiry: { $gt: new Date() }, // Token not expired
+            resetTokenExpiry: { $gt: new Date() },
         });
 
         if (!user) {
             return NextResponse.json(
-                { message: "Invalid or expired token" },
+                { message: "Invalid or expired reset token" },
                 { status: 400 }
             );
         }
 
-        // Hash new password
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // Update user: set new password and clear reset token fields
         await db.collection("users").updateOne(
             { _id: user._id },
             {
@@ -41,7 +46,7 @@ export async function POST(req: NextRequest) {
         );
 
         return NextResponse.json(
-            { message: "Password has been reset successfully. You can now log in." },
+            { message: "Password updated successfully" },
             { status: 200 }
         );
     } catch (error) {

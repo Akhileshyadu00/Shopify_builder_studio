@@ -6,19 +6,20 @@ export default withAuth({
     },
     callbacks: {
         authorized: ({ token, req }) => {
-            const isRootAdmin = req.nextUrl.pathname === "/admin";
-            const isNestedAdmin = req.nextUrl.pathname.startsWith("/admin/");
+            const path = req.nextUrl.pathname;
+            const isRootAdmin = path === "/admin";
+            const isNestedAdmin = path.startsWith("/admin/");
+            const isApiAdmin = path.startsWith("/api/admin");
 
-            // Allow unauthenticated users to visit the root portal to log in or register
-            if (isRootAdmin) {
-                return true;
-            }
+            // Allow unauthenticated users to visit the root portal to log in
+            if (isRootAdmin) return true;
 
-            // Strictly protect nested admin routes
-            if (isNestedAdmin && token?.role !== "admin") {
+            // Strictly protect nested admin and API admin routes
+            if ((isNestedAdmin || isApiAdmin) && token?.role !== "admin") {
                 return false;
             }
 
+            // Protect other matching routes (profile, upload)
             return !!token;
         },
     },

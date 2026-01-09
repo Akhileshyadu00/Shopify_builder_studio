@@ -76,18 +76,19 @@ export async function PUT(req: Request) {
     }
 
     try {
-        const { userId, role } = await req.json();
+        const { userId, role, newPassword } = await req.json();
 
-        // Check for Admin status or Self-promotion (for the Studio onboarding)
-        const isAdmin = session.user.role === "admin";
+        const adminStatus = session.user.role === "admin";
         const isSelfPromotion = session.user.id === userId && role === "admin";
 
-        if (!isAdmin && !isSelfPromotion) {
+        // Only admins can change roles or passwords for others.
+        // Special case: self-promotion for onboarding.
+        if (!adminStatus && !isSelfPromotion) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        if (!userId || !role) {
-            return NextResponse.json({ error: "Missing userId or role" }, { status: 400 });
+        if (!userId) {
+            return NextResponse.json({ error: "Missing userId" }, { status: 400 });
         }
 
         const client = await clientPromise;
@@ -100,16 +101,26 @@ export async function PUT(req: Request) {
             filter = { _id: userId };
         }
 
+        const updateData: any = {};
+        if (role) updateData.role = role;
+        if (newPassword) {
+            updateData.password = await bcrypt.hash(newPassword, 12);
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return NextResponse.json({ error: "No updates provided" }, { status: 400 });
+        }
+
         const result = await db.collection("users").updateOne(
             filter,
-            { $set: { role } }
+            { $set: updateData }
         );
 
         if (result.matchedCount === 0) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: newPassword ? "Password reset successfully" : "User updated successfully" });
     } catch (error) {
         console.error("Admin Update Error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
