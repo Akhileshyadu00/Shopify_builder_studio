@@ -15,7 +15,10 @@ import { Input } from "@/components/ui/input"; // Assuming you have an input com
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AuthModalProps {
     children?: React.ReactNode;
@@ -128,7 +131,16 @@ export function AuthModal({ children, defaultTab = "login" }: AuthModalProps) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="password">Password</Label>
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Link
+                                        href="/auth/forgot-password"
+                                        onClick={() => setIsOpen(false)}
+                                        className="text-[10px] font-bold text-zinc-500 hover:text-primary transition-colors uppercase tracking-widest"
+                                    >
+                                        Forgot?
+                                    </Link>
+                                </div>
                                 <Input
                                     id="password"
                                     type="password"

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Shield,
@@ -240,7 +241,15 @@ export default function AdminIntakePortal() {
                                             </div>
                                         </div>
                                         <div className="space-y-1.5 pb-6">
-                                            <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest ml-2">Access Key</label>
+                                            <div className="flex items-center justify-between px-2">
+                                                <label className="text-[8px] font-black uppercase text-zinc-500 tracking-widest">Access Key</label>
+                                                <Link
+                                                    href="/auth/forgot-password"
+                                                    className="text-[8px] font-black uppercase text-zinc-500 hover:text-primary transition-colors tracking-widest"
+                                                >
+                                                    Recovery
+                                                </Link>
+                                            </div>
                                             <div className="relative">
                                                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
                                                 <Input
